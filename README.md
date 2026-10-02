@@ -9,8 +9,8 @@ same backend mutation as `/coin`.
 
 Use mise 2026.10.0 or newer, then run `just setup`. `mise.toml` installs the
 pinned tools and reads RPP's release definition from `chunkzero/aqua-registry`.
-The published RPP binary currently supports Linux amd64; other platforms require
-a compatible `rpp` on `PATH`. Have `chunk` on `PATH`.
+RPP supports Linux and macOS on x64/arm64, and Windows on x64. Mise selects the
+native archive automatically. Have `chunk` on `PATH`.
 
 The Window plugin resolves through `chunkzero/rpp-registry`; its matching JVM
 runtime resolves from `https://maven.chunkzero.com`.
@@ -56,7 +56,7 @@ Unchanged sources skip the scheduled release; manual dispatch can publish earlie
 
 RPP follows the latest nightly through `aqua:chunkzero/rpp-nightly`; `mise.lock`
 pins the selected build and checksum. Update it with
-`mise lock --bump --platform linux-x64 aqua:chunkzero/rpp-nightly`, then run
+`mise lock --bump aqua:chunkzero/rpp-nightly`, then run
 `mise install` and commit `mise.lock`. The per-tool minimum release age allows
 fresh nightlies without requiring a global mise setting. Pin a Window
 nightly with `rpp -C pack add window@<version>` after its registry PR merges, then

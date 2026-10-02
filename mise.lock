@@ -3,14 +3,174 @@
 lockfile_version = 3
 
 [[tools."aqua:chunkzero/rpp-nightly"]]
-version = "0.1.0-nightly.20261002.g667e31110ca8"
+version = "0.1.0-nightly.20261002.ge7fe09d0aa17"
 backend = "aqua:chunkzero/rpp-nightly"
 specifiers = ["latest"]
 
 [tools."aqua:chunkzero/rpp-nightly".options]
 "vars.prerelease" = "true"
 
+[tools."aqua:chunkzero/rpp-nightly"."platforms.linux-arm64"]
+checksum = "sha256:9e91f63b224f6124ca19593924febba339fe22b84b6e1e64a907473cfe5674fb"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873591"
+
 [tools."aqua:chunkzero/rpp-nightly"."platforms.linux-x64"]
-checksum = "sha256:4a1c3b1595cc34a7ad057d5af11f7ec6e914b69d2e371fccbdbcf5f934e39c65"
-url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.g667e31110ca8/rpp-0.1.0-nightly.20261002.g667e31110ca8-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604607523"
+checksum = "sha256:fd19c0f42538ee5e0e75d4d3dbd3e914a1cd507120826ba47176f3ca088f6e45"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873605"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.macos-arm64"]
+checksum = "sha256:9dd654ce1fd10a801c2f45e30e0f39be29fe1cf76758c5b31e1f16a861ecd14e"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873572"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.macos-x64"]
+checksum = "sha256:f84b6c6f1ab956138ecb99d815bee77f7f9a610d321f5684a4ec23e1ff5dad71"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873575"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.windows-x64"]
+checksum = "sha256:ccfd0164a3e56a5c8b3bbf6c83df1f78301ceb80ed0d9ceacd3d45e01f231c3c"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-windows-x64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873624"
+
+[[tools.java]]
+version = "temurin-25.0.4+7.0.LTS"
+backend = "core:java"
+specifiers = ["temurin-25.0.4+7.0.LTS"]
+
+[tools.java."platforms.linux-arm64"]
+checksum = "sha256:621f7196f0b682fb557da58bec89bd7dfe5419811fe1c0ba75c9cc8432f084c7"
+url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4%2B7/OpenJDK25U-jdk_aarch64_linux_hotspot_25.0.4_7.tar.gz"
+
+[tools.java."platforms.linux-x64"]
+checksum = "sha256:e58fcdcd637b25c03ca84cbbcefc70d11efb8f4b4cbd05decc9f661769d77f94"
+url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4%2B7/OpenJDK25U-jdk_x64_linux_hotspot_25.0.4_7.tar.gz"
+
+[tools.java."platforms.macos-arm64"]
+checksum = "sha256:5a101c54abf5a9f16c0f70d8c38ba99e6567c1ba213378f0bb04497284f051bd"
+url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4%2B7/OpenJDK25U-jdk_aarch64_mac_hotspot_25.0.4_7.tar.gz"
+
+[tools.java."platforms.macos-x64"]
+checksum = "sha256:a5ac9c46dad47ac06df35e36d096913195d8da1f3f71918828bcc2cfe33869b7"
+url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4%2B7/OpenJDK25U-jdk_x64_mac_hotspot_25.0.4_7.tar.gz"
+
+[tools.java."platforms.windows-x64"]
+checksum = "sha256:7caab7db43bf4b94a2e6252c699e70d90084f9aa7c943cd3414761fd540937ae"
+url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4%2B7/OpenJDK25U-jdk_x64_windows_hotspot_25.0.4_7.zip"
+
+[[tools.just]]
+version = "1.58.0"
+backend = "aqua:casey/just"
+specifiers = ["1.58.0"]
+
+[tools.just."platforms.linux-arm64"]
+checksum = "sha256:748237128c4c40cbdabc65e841d05ceba13cc23a91eaba395495894c1d9764df"
+url = "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/500510099"
+
+[tools.just."platforms.linux-x64"]
+checksum = "sha256:4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d"
+url = "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/500509978"
+
+[tools.just."platforms.macos-arm64"]
+checksum = "sha256:50ae3e996c974a0bf32ea7d10f495070df33f1b43e0616b2769e3d4821ed8f48"
+url = "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/500509965"
+
+[tools.just."platforms.macos-x64"]
+checksum = "sha256:9a09cfef66aaa79da58203970103a0684307716caaabd3e9844cacc4dc0f4023"
+url = "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/500510084"
+
+[tools.just."platforms.windows-x64"]
+checksum = "sha256:759f16fb7aa17c5c8b9594b6d4a8c1a6630dfd042cf2b3ff84841454d3d188dc"
+url = "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/casey/just/releases/assets/500511374"
+
+[[tools.ktlint]]
+version = "1.8.0"
+backend = "aqua:ktlint/ktlint"
+specifiers = ["1.8.0"]
+
+[tools.ktlint."platforms.linux-arm64"]
+checksum = "sha256:3722801dd119b96a2fbeda0b9d66f173994f249998c87bcf2274b51977aa8f77"
+url = "https://github.com/ktlint/ktlint/releases/download/1.8.0/ktlint-1.8.0.zip"
+url_api = "https://api.github.com/repos/ktlint/ktlint/releases/assets/316074523"
+
+[tools.ktlint."platforms.linux-x64"]
+checksum = "sha256:3722801dd119b96a2fbeda0b9d66f173994f249998c87bcf2274b51977aa8f77"
+url = "https://github.com/ktlint/ktlint/releases/download/1.8.0/ktlint-1.8.0.zip"
+url_api = "https://api.github.com/repos/ktlint/ktlint/releases/assets/316074523"
+
+[tools.ktlint."platforms.macos-arm64"]
+checksum = "sha256:3722801dd119b96a2fbeda0b9d66f173994f249998c87bcf2274b51977aa8f77"
+url = "https://github.com/ktlint/ktlint/releases/download/1.8.0/ktlint-1.8.0.zip"
+url_api = "https://api.github.com/repos/ktlint/ktlint/releases/assets/316074523"
+
+[tools.ktlint."platforms.macos-x64"]
+checksum = "sha256:3722801dd119b96a2fbeda0b9d66f173994f249998c87bcf2274b51977aa8f77"
+url = "https://github.com/ktlint/ktlint/releases/download/1.8.0/ktlint-1.8.0.zip"
+url_api = "https://api.github.com/repos/ktlint/ktlint/releases/assets/316074523"
+
+[tools.ktlint."platforms.windows-x64"]
+checksum = "sha256:3722801dd119b96a2fbeda0b9d66f173994f249998c87bcf2274b51977aa8f77"
+url = "https://github.com/ktlint/ktlint/releases/download/1.8.0/ktlint-1.8.0.zip"
+url_api = "https://api.github.com/repos/ktlint/ktlint/releases/assets/316074523"
+
+[[tools.node]]
+version = "24.21.0"
+backend = "core:node"
+specifiers = ["24.21.0"]
+
+[tools.node."platforms.linux-arm64"]
+checksum = "sha256:724282c3b43aec998aa9527380465b45d229e021b58035f5f4f63095eabfe5d5"
+url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-arm64.tar.gz"
+
+[tools.node."platforms.linux-x64"]
+checksum = "sha256:6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff"
+url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz"
+
+[tools.node."platforms.macos-arm64"]
+checksum = "sha256:bed7eea5325e1108f32ce5228ddd6a5f0f08a499ee42aa7442aea583702f6057"
+url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-darwin-arm64.tar.gz"
+
+[tools.node."platforms.macos-x64"]
+checksum = "sha256:1462cb3b3046b815cf8ea436d3da450ec1a9f11dac7e5a46b0ada5305d7e8097"
+url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-darwin-x64.tar.gz"
+
+[tools.node."platforms.windows-x64"]
+checksum = "sha256:158f7685b44de51f6c0df1d153526cbcd3e1bc739a8dfc607721cef75de9e541"
+url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-win-x64.zip"
+
+[[tools.pnpm]]
+version = "10.33.0"
+backend = "aqua:pnpm/pnpm"
+specifiers = ["10.33.0"]
+
+[tools.pnpm."platforms.linux-arm64"]
+checksum = "sha256:06755ad2817548b84317d857d5c8003dc6e9e28416a3ea7467256c49ab400d48"
+url = "https://github.com/pnpm/pnpm/releases/download/v10.33.0/pnpm-linux-arm64"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/380583284"
+
+[tools.pnpm."platforms.linux-x64"]
+checksum = "sha256:8d4e8f7d778e8ac482022e2577011706a872542f6f6f233e795a4d9f978ea8b5"
+url = "https://github.com/pnpm/pnpm/releases/download/v10.33.0/pnpm-linux-x64"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/380583278"
+
+[tools.pnpm."platforms.macos-arm64"]
+checksum = "sha256:ed8a1f140f4de457b01ebe0be3ae28e9a7e28863315dcd53d22ff1e5a32d63ae"
+url = "https://github.com/pnpm/pnpm/releases/download/v10.33.0/pnpm-macos-arm64"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/380583277"
+
+[tools.pnpm."platforms.macos-x64"]
+checksum = "sha256:c31e29554b0e3f4e03f4617195c949595e4dca36085922003de4896c3ca4057d"
+url = "https://github.com/pnpm/pnpm/releases/download/v10.33.0/pnpm-macos-x64"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/380583280"
+
+[tools.pnpm."platforms.windows-x64"]
+checksum = "sha256:afc96009dc39fe23a835d65192049e6a995f342496b175585dc2beda7d42d33f"
+url = "https://github.com/pnpm/pnpm/releases/download/v10.33.0/pnpm-win-x64.exe"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/380583279"
