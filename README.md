@@ -54,9 +54,11 @@ Unchanged sources skip the scheduled release; manual dispatch can publish earlie
 - Window plugin: GitHub release archive, registered through a PR in `chunkzero/rpp-registry`.
 - Window JVM libraries: the same version published to `https://maven.chunkzero.com`.
 
-List published RPP builds with `mise ls-remote aqua:chunkzero/rpp`. Pin the chosen
-nightly in `mise.toml`, run `mise lock --platform linux-x64 aqua:chunkzero/rpp`,
-then `mise install`. Pin a Window
+RPP follows the latest nightly through `aqua:chunkzero/rpp-nightly`; `mise.lock`
+pins the selected build and checksum. Update it with
+`mise lock --bump --platform linux-x64 aqua:chunkzero/rpp-nightly`, then run
+`mise install` and commit `mise.lock`. The per-tool minimum release age allows
+fresh nightlies without requiring a global mise setting. Pin a Window
 nightly with `rpp -C pack add window@<version>` after its registry PR merges, then
 set the same Window version in `gradle/libs.versions.toml`. Commit the version
 changes, `mise.lock`, and `pack/rpp.lock` together. RPP and Window can use different
