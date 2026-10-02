@@ -1,0 +1,11 @@
+.gradle/
+.kotlin/
+.chunk/
+.rpp/
+**/.rpp/
+**/build/
+**/dist/
+node_modules/
+shared/src/main/kotlin/dev/chunkzero/example/ui/generated/
+
+/assets/*.zip

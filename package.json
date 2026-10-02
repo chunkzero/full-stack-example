@@ -1,0 +1,21 @@
+{
+  "name": "@chunkzero/full-stack-example",
+  "private": true,
+  "imports": {
+    "#chunk": "./.chunk/generated/index.ts",
+    "#chunk/schema": "./.chunk/sdk/schema.ts",
+    "#chunk/apps": "./.chunk/generated/apps.ts"
+  },
+  "scripts": {
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "oxfmt": "0.67.0",
+    "oxlint": "1.64.0",
+    "typescript": "7.0.2"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

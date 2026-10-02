@@ -1,0 +1,10 @@
+[versions]
+chunk = "0.1.0"
+window = "0.1.0-nightly.20261002.g67305fc8e4c3"
+junit = "6.1.3"
+
+[libraries]
+window-runtime = { module = "dev.oglass.window:window-runtime", version.ref = "window" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
