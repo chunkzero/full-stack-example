@@ -21,7 +21,7 @@ export default ui({
   container: "generic_9x6",
   children: [
     panel({ frame: "shell", x: 0, y: 0, width: 176, height: 222 }),
-    panel({ frame: "title_bar", x: 4, y: 3, width: 168, height: 13 }),
+    panel({ frame: "panel", x: 4, y: 3, width: 168, height: 13 }),
     slot("course", { x: 8, y: 6, width: 160, align: "center", color: "#ffd75e", bold: true }),
     panel({ frame: "recess", x: 3, y: 17, width: 170, height: 110 }),
     label("PLAYER", { x: 5, y: 20, width: 38, color: "#a9d9b5" }),
@@ -30,10 +30,10 @@ export default ui({
     ),
     label("TOT", { x: 135, y: 20, width: 17, align: "center", color: "#a9d9b5" }),
     label("+/-", { x: 153, y: 20, width: 20, align: "right", color: "#a9d9b5" }),
-    panel({ frame: "header", x: 5, y: 29, width: 166, height: 1 }),
+    panel({ frame: "recess", x: 5, y: 29, width: 166, height: 1 }),
     label("PAR", { x: 5, y: firstLineY, width: 38, color: "#ffd75e", bold: true }),
     ...line("par", firstLineY),
-    panel({ frame: "header", x: 5, y: firstLineY + 9, width: 166, height: 1 }),
+    panel({ frame: "recess", x: 5, y: firstLineY + 9, width: 166, height: 1 }),
     ...Array.from({ length: players }, (_, i) => {
       const y = firstLineY + lineGap + 2 + i * lineGap;
       return [slot(`p${i}_name`, { x: 5, y, width: 38, color: "#ffffff" }), ...line(`p${i}`, y)];

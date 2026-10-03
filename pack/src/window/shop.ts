@@ -14,7 +14,7 @@ export default ui({
   container: "generic_9x6",
   children: [
     panel({ frame: "shell", x: 0, y: 0, width: 176, height: 222 }),
-    panel({ frame: "title_bar", x: 4, y: 3, width: 168, height: 13 }),
+    panel({ frame: "panel", x: 4, y: 3, width: 168, height: 13 }),
     label("BALL SHOP", { x: 8, y: 6, width: 80, color: "#ffd75e", bold: true }),
     slot("balance", { x: 88, y: 6, width: 80, align: "right", color: "#ffffff", bold: true }),
     repeater("entry", {
