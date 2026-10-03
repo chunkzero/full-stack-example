@@ -1,5 +1,7 @@
 package dev.chunkzero.example.golf
 
+import dev.chunkzero.backend.api.PlayerId
+import dev.chunkzero.backend.client.OperationId
 import dev.chunkzero.example.generated.BackendTypes.Shared.Courses
 import dev.chunkzero.example.generated.BackendTypes.Shared.Players
 import dev.chunkzero.example.generated.BackendTypes.Shared.Rounds
@@ -26,6 +28,7 @@ import dev.chunkzero.runtime.coroutines
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
@@ -65,6 +68,7 @@ class GolfSession :
 
     private val rounds = LinkedHashMap<Player, PlayerRound>()
     private val roundsPlayed = HashMap<UUID, Int>()
+    private val saves = HashMap<PlayerRound, Deferred<Rounds.RecordResult?>>()
     private val scorecards = HashMap<Player, Pair<ScorecardMenu, Inventory>>()
 
     private val pars: List<Int> get() = course.roundHoles.map { it.par }
@@ -113,7 +117,8 @@ class GolfSession :
                 skin,
                 ghost,
                 onHoleFinished = { refreshScorecards() },
-                onRoundFinished = { scope.coroutines.launch { finishRound(it) } },
+                onRoundFinished = ::startSave,
+                onResultsReady = { scope.coroutines.launch { showResults(it) } },
             )
         rounds[player] = round
         scope.own(player, round)
@@ -132,6 +137,10 @@ class GolfSession :
         rounds.remove(player)
         scorecards.remove(player)
         refreshScorecards()
+    }
+
+    override suspend fun finish() {
+        saves.values.toList().awaitAll()
     }
 
     override fun scorecard(args: SessionMethods.Golf.Default.Scorecard.Args): Boolean {
@@ -159,7 +168,8 @@ class GolfSession :
         scorecards.forEach { (player, open) -> open.first.rows = rowsFor(player) }
     }
 
-    private suspend fun finishRound(round: PlayerRound) {
+    /** Starts saving a finished round right away; the save outlives the player and the results screen. */
+    private fun startSave(round: PlayerRound) {
         val player = round.player
         val number = roundsPlayed.merge(player.uuid, 1, Int::plus)!!
         val args =
@@ -172,23 +182,44 @@ class GolfSession :
                 round.card.scores.map { it!!.toLong() },
             )
         val operation = scope.operationId(player, "round-$number")
-        val backend = playerBackend(player)
-        var result: Rounds.RecordResult? = null
+        // Session-owned, so it stays open after the player's own resources are released on leave.
+        val backend =
+            CoroutineBackendClient(
+                scope.coroutines.backend(requireNotNull(scope.backend).forPlayer(PlayerId(player.uuid.toString()))),
+            )
+        saves[round] = scope.coroutines.async { record(round, backend, args, operation) }
+    }
+
+    private suspend fun record(
+        round: PlayerRound,
+        backend: CoroutineBackendClient,
+        args: Rounds.RecordArgs,
+        operation: OperationId,
+    ): Rounds.RecordResult? {
         for (attempt in 1..RECORD_ATTEMPTS) {
             try {
-                result = backend.shared.rounds.record_(args, operation)
-                break
+                return backend.shared.rounds.record_(args, operation)
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
                 logger.warn("Recording round {} failed (attempt {})", args.round(), attempt, error)
                 if (attempt < RECORD_ATTEMPTS) {
-                    player.sendMessage(Component.text("Saving your round failed, retrying...", NamedTextColor.RED))
+                    if (rounds[round.player] === round && round.player.isOnline) {
+                        round.player.sendMessage(
+                            Component.text("Saving your round failed, retrying...", NamedTextColor.RED),
+                        )
+                    }
                     delay(RECORD_RETRY_DELAY)
                 }
             }
         }
-        if (!player.isOnline || player !in rounds) return
+        return null
+    }
+
+    private suspend fun showResults(round: PlayerRound) {
+        val player = round.player
+        val result = saves.getValue(round).await()
+        if (!player.isOnline || rounds[player] !== round) return
         announce(player, round.card, result)
 
         var moved = false

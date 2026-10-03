@@ -35,7 +35,8 @@ class Ghost(
 /**
  * One player's nine holes: their ball, putter, HUD and ghost, from the first tee to the last cup. Owned by the
  * player's place in the session, so leaving mid-round cleans everything up. [onHoleFinished] runs after each hole's
- * score is final and [onRoundFinished] after the last one.
+ * score is final. [onRoundFinished] runs as soon as the last score is final, and [onResultsReady] after the
+ * celebration delay that follows.
  */
 class PlayerRound(
     private val scope: SessionScope,
@@ -47,6 +48,7 @@ class PlayerRound(
     private val ghost: Ghost?,
     private val onHoleFinished: (PlayerRound) -> Unit,
     private val onRoundFinished: (PlayerRound) -> Unit,
+    private val onResultsReady: (PlayerRound) -> Unit,
 ) : AutoCloseable {
     val card = RoundCard(holes.map { it.par })
     private val jobs =
@@ -160,13 +162,15 @@ class PlayerRound(
         putter.armed = false
         hud.stroke = holeCard.score ?: holeCard.strokes
         onHoleFinished(this)
+        val last = holeIndex + 1 >= holes.size
+        if (last) onRoundFinished(this)
         jobs.launch {
             delay(NEXT_HOLE_DELAY)
-            if (holeIndex + 1 < holes.size) {
-                startHole(holeIndex + 1)
-            } else {
+            if (last) {
                 clearHole()
-                onRoundFinished(this@PlayerRound)
+                onResultsReady(this@PlayerRound)
+            } else {
+                startHole(holeIndex + 1)
             }
         }
     }
