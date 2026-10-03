@@ -33,7 +33,10 @@ class PlayMenu(
     override fun courseInfo(): Component = text("${course.holes} holes  ·  Par ${course.par}")
 
     override fun record(): Component =
-        record?.let { text("${fit(it.holder, 14)} - ${it.strokes} strokes", UiColors.GOLD) }
+        record?.let {
+            val suffix = " - ${it.strokes}"
+            text(fit(it.holder, RECORD_WIDTH - textWidth(suffix)) + suffix, UiColors.GOLD)
+        }
             ?: text("No record yet", UiColors.MUTED)
 
     override fun best(): Component = personalBest?.let { text("$it strokes") } ?: text("Not played yet", UiColors.MUTED)
@@ -45,4 +48,8 @@ class PlayMenu(
     override fun onShop(click: Click) = onShop.invoke()
 
     override fun onProfile(click: Click) = onProfile.invoke()
+
+    private companion object {
+        const val RECORD_WIDTH = 112
+    }
 }

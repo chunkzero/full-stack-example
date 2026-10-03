@@ -55,7 +55,7 @@ class ShopMenu(
 
     override fun nextLabel(): Component = pageLabel("NEXT >", pager.canNext(offset, skins.size))
 
-    override fun entryName(index: Int): Component = skinAt(index)?.let { text(fit(it.name, 9)) } ?: text("")
+    override fun entryName(index: Int): Component = skinAt(index)?.let { text(fit(it.name, 52)) } ?: text("")
 
     override fun entryPrice(index: Int): Component {
         val skin = skinAt(index) ?: return text("")
@@ -91,6 +91,10 @@ class ShopMenu(
     override fun onOpen() {
         opened = true
         syncPager()
+    }
+
+    override fun onClose() {
+        opened = false
     }
 
     private fun skinAt(cell: Int): BallSkin? = pager.itemIndex(offset, cell, skins.size)?.let(skins::get)

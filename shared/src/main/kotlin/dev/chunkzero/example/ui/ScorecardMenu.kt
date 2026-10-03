@@ -40,7 +40,7 @@ class ScorecardMenu(
 
     private fun nameOf(row: ScorecardRow?): Component {
         row ?: return text("")
-        val name = text(fit(row.name, MAX_NAME_CHARS), if (row.isViewer) UiColors.GOLD else UiColors.WHITE)
+        val name = text(fit(row.name, NAME_WIDTH), if (row.isViewer) UiColors.GOLD else UiColors.WHITE)
         return if (row.isViewer) name.decorate(TextDecoration.UNDERLINED) else name
     }
 
@@ -76,6 +76,6 @@ class ScorecardMenu(
     companion object {
         const val MAX_PLAYERS = 8
         private const val HOLES = 9
-        private const val MAX_NAME_CHARS = 6
+        private const val NAME_WIDTH = 38
     }
 }

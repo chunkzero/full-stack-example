@@ -23,9 +23,9 @@ class ProfileMenu(
 ) : ProfileView() {
     var card: ProfileCard by state(initialCard)
 
-    override fun name(): Component = text(card.name)
+    override fun name(): Component = text(fit(card.name, 132, bold = true))
 
-    override fun ballName(): Component = text("Ball: ${card.ballName}", UiColors.MUTED)
+    override fun ballName(): Component = text(fit("Ball: ${card.ballName}", 132), UiColors.MUTED)
 
     override fun level(): Component = text("Level ${card.level}", UiColors.GOLD)
 

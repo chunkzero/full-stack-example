@@ -1,5 +1,6 @@
 package dev.chunkzero.example.ui
 
+import dev.chunkzero.example.ui.generated.WindowFonts
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 
@@ -17,7 +18,22 @@ internal fun text(
     color: TextColor = UiColors.WHITE,
 ): Component = Component.text(value, color)
 
+/** Rendered width in GUI pixels, from the generated font metrics. Bold adds one pixel per glyph. */
+internal fun textWidth(
+    value: String,
+    bold: Boolean = false,
+): Int = value.sumOf { (WindowFonts.advances[it.toString()] ?: DEFAULT_ADVANCE) + if (bold) 1 else 0 }
+
+/** Truncates [value] with a trailing "." so it renders within [maxWidth] pixels. */
 internal fun fit(
     value: String,
-    maxChars: Int,
-): String = if (value.length <= maxChars) value else value.take(maxChars - 1) + "."
+    maxWidth: Int,
+    bold: Boolean = false,
+): String {
+    if (textWidth(value, bold) <= maxWidth) return value
+    var result = value
+    while (result.isNotEmpty() && textWidth("$result.", bold) > maxWidth) result = result.dropLast(1)
+    return "$result."
+}
+
+private const val DEFAULT_ADVANCE = 6
