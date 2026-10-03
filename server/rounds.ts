@@ -17,8 +17,17 @@ function holeCoins(strokes: number, par: number) {
 
 const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
 
+const golfSession = v.object({ session: v.session(), app: v.literal("golf"), player: v.optional(v.player()) });
+
+/** Saves a finished round for `player`. Only a golf session acting for itself may call it, so it works after the player left. */
 export const record = mutation({
-  args: { round: v.string(), course: v.string(), strokes: v.array(v.integer()), shots: v.array(v.array(shot)) },
+  args: {
+    player: v.player(),
+    round: v.string(),
+    course: v.string(),
+    strokes: v.array(v.integer()),
+    shots: v.array(v.array(shot)),
+  },
   returns: v.object({
     coins: v.integer(),
     xp: v.integer(),
@@ -27,8 +36,9 @@ export const record = mutation({
     personalBest: v.boolean(),
     courseRecord: v.boolean(),
   }),
-  handler: ({ db, caller }, { round, course, strokes, shots }) => {
-    const player = callerPlayer(caller);
+  handler: ({ db, caller }, { player, round, course, strokes, shots }) => {
+    if (golfSession.parse(caller).player !== undefined)
+      throw new Error("Rounds are recorded by the session, not a player");
     const earlier = db
       .query("results")
       .withIndex("by_round", (q) => q.eq("round", round).eq("player", player))

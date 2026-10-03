@@ -1,5 +1,6 @@
 package dev.chunkzero.example.golf
 
+import dev.chunkzero.example.generated.BackendTypes.Shared.Rounds
 import dev.chunkzero.example.golf.physics.BallEvent
 import dev.chunkzero.example.golf.physics.Shot
 import dev.chunkzero.example.golf.physics.Terrain
@@ -10,6 +11,7 @@ import dev.chunkzero.example.ui.generated.WindowPack
 import dev.chunkzero.runtime.SessionScope
 import dev.chunkzero.runtime.coroutines
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -35,8 +37,8 @@ class Ghost(
 /**
  * One player's nine holes: their ball, putter, HUD and ghost, from the first tee to the last cup. Owned by the
  * player's place in the session, so leaving mid-round cleans everything up. [onHoleFinished] runs after each hole's
- * score is final. [onRoundFinished] runs as soon as the last score is final, and [onResultsReady] after the
- * celebration delay that follows.
+ * score is final. [onRoundFinished] runs as soon as the last score is final and starts the save, and
+ * [onResultsReady] hands that save over after the celebration delay that follows.
  */
 class PlayerRound(
     private val scope: SessionScope,
@@ -47,8 +49,8 @@ class PlayerRound(
     private val skin: BallSkin,
     private val ghost: Ghost?,
     private val onHoleFinished: (PlayerRound) -> Unit,
-    private val onRoundFinished: (PlayerRound) -> Unit,
-    private val onResultsReady: (PlayerRound) -> Unit,
+    private val onRoundFinished: (PlayerRound) -> Deferred<Rounds.RecordResult?>,
+    private val onResultsReady: (PlayerRound, Deferred<Rounds.RecordResult?>) -> Unit,
 ) : AutoCloseable {
     val card = RoundCard(holes.map { it.par })
     private val jobs =
@@ -163,12 +165,12 @@ class PlayerRound(
         hud.stroke = holeCard.score ?: holeCard.strokes
         onHoleFinished(this)
         val last = holeIndex + 1 >= holes.size
-        if (last) onRoundFinished(this)
+        val save = if (last) onRoundFinished(this) else null
         jobs.launch {
             delay(NEXT_HOLE_DELAY)
             if (last) {
                 clearHole()
-                onResultsReady(this@PlayerRound)
+                if (save != null) onResultsReady(this@PlayerRound, save)
             } else {
                 startHole(holeIndex + 1)
             }

@@ -60,6 +60,7 @@ class GolfSession :
     CoroutineSession(),
     SessionMethods.Golf.Default.Scorecard {
     private lateinit var scope: SessionScope
+    private lateinit var backend: CoroutineBackendClient
     private lateinit var course: Course
     private lateinit var terrain: InstanceTerrain
     private lateinit var instance: InstanceContainer
@@ -68,7 +69,7 @@ class GolfSession :
 
     private val rounds = LinkedHashMap<Player, PlayerRound>()
     private val roundsPlayed = HashMap<UUID, Int>()
-    private val saves = HashMap<PlayerRound, Deferred<Rounds.RecordResult?>>()
+    private val saves = HashSet<Deferred<Rounds.RecordResult?>>()
     private val scorecards = HashMap<Player, Pair<ScorecardMenu, Inventory>>()
 
     private val pars: List<Int> get() = course.roundHoles.map { it.par }
@@ -80,9 +81,9 @@ class GolfSession :
         terrain = InstanceTerrain(instance)
         scope.keepAboveVoid { course.spawn }
 
-        val backend = CoroutineBackendClient(scope.coroutines.backend(requireNotNull(scope.backend)))
-        scope.coroutines.launch { checkPars(backend) }
-        ghost = scope.coroutines.async { loadGhost(backend) }
+        backend = CoroutineBackendClient(scope.coroutines.backend(requireNotNull(scope.backend)))
+        scope.coroutines.launch { checkPars() }
+        ghost = scope.coroutines.async { loadGhost() }
     }
 
     override suspend fun join(player: Player) {
@@ -118,7 +119,7 @@ class GolfSession :
                 ghost,
                 onHoleFinished = { refreshScorecards() },
                 onRoundFinished = ::startSave,
-                onResultsReady = { scope.coroutines.launch { showResults(it) } },
+                onResultsReady = { finished, save -> scope.coroutines.launch { showResults(finished, save) } },
             )
         rounds[player] = round
         scope.own(player, round)
@@ -140,7 +141,7 @@ class GolfSession :
     }
 
     override suspend fun finish() {
-        saves.values.toList().awaitAll()
+        saves.toList().awaitAll()
     }
 
     override fun scorecard(args: SessionMethods.Golf.Default.Scorecard.Args): Boolean {
@@ -168,13 +169,17 @@ class GolfSession :
         scorecards.forEach { (player, open) -> open.first.rows = rowsFor(player) }
     }
 
-    /** Starts saving a finished round right away; the save outlives the player and the results screen. */
-    private fun startSave(round: PlayerRound) {
+    /**
+     * Starts saving a finished round right away. The session records it for the player, so the save outlives both the
+     * player and the results screen.
+     */
+    private fun startSave(round: PlayerRound): Deferred<Rounds.RecordResult?> {
         val player = round.player
         val number = roundsPlayed.merge(player.uuid, 1, Int::plus)!!
         val args =
             Rounds.RecordArgs(
                 COURSE,
+                PlayerId(player.uuid.toString()),
                 "${scope.id}/${player.uuid}/$number",
                 round.card.holes.map { hole ->
                     hole.shots.map { Rounds.RecordArgs.ShotsItemItem(it.power, it.yaw.toDouble()) }
@@ -182,17 +187,14 @@ class GolfSession :
                 round.card.scores.map { it!!.toLong() },
             )
         val operation = scope.operationId(player, "round-$number")
-        // Session-owned, so it stays open after the player's own resources are released on leave.
-        val backend =
-            CoroutineBackendClient(
-                scope.coroutines.backend(requireNotNull(scope.backend).forPlayer(PlayerId(player.uuid.toString()))),
-            )
-        saves[round] = scope.coroutines.async { record(round, backend, args, operation) }
+        val save = scope.coroutines.async { record(round, args, operation) }
+        saves += save
+        save.invokeOnCompletion { saves -= save }
+        return save
     }
 
     private suspend fun record(
         round: PlayerRound,
-        backend: CoroutineBackendClient,
         args: Rounds.RecordArgs,
         operation: OperationId,
     ): Rounds.RecordResult? {
@@ -216,9 +218,12 @@ class GolfSession :
         return null
     }
 
-    private suspend fun showResults(round: PlayerRound) {
+    private suspend fun showResults(
+        round: PlayerRound,
+        save: Deferred<Rounds.RecordResult?>,
+    ) {
         val player = round.player
-        val result = saves.getValue(round).await()
+        val result = save.await()
         if (!player.isOnline || rounds[player] !== round) return
         announce(player, round.card, result)
 
@@ -300,7 +305,7 @@ class GolfSession :
             BallSkin.DEFAULT
         }
 
-    private suspend fun checkPars(backend: CoroutineBackendClient) {
+    private suspend fun checkPars() {
         try {
             val server = backend.shared.courses.course(Courses.CourseArgs(COURSE))
             if (server == null) {
@@ -317,7 +322,7 @@ class GolfSession :
         }
     }
 
-    private suspend fun loadGhost(backend: CoroutineBackendClient): Ghost? =
+    private suspend fun loadGhost(): Ghost? =
         try {
             backend.shared.rounds
                 .courseRecord(Rounds.CourseRecordArgs(COURSE))
