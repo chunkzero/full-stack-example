@@ -56,6 +56,12 @@ object BallPhysics {
     const val STEP_HEIGHT = 0.5
     const val STEP_COST = 0.6
 
+    /**
+     * How far a resting ball sinks into its floor during one substep of gravity. A wall can be tested before the floor
+     * has pushed the ball back up, so a rise measures this much taller than it is.
+     */
+    internal const val SETTLE_DEPTH = GRAVITY * DT * DT
+
     /** Landings slower than this stop instead of bouncing. */
     const val MIN_BOUNCE_SPEED = 1.5
 
@@ -309,12 +315,20 @@ class BallSimulation(
             depth = faces[face] + r
         }
 
-        val vn = vx * nx + vy * ny + vz * nz
+        var vn = vx * nx + vy * ny + vz * nz
         if (BallPhysics.isWall(ny) && vn < 0 && wasGrounded && tryStep(box, nx, nz)) return Contact.STEPPED
 
         px += nx * depth
         py += ny * depth
         pz += nz * depth
+        if (BallPhysics.isGround(ny)) {
+            // A floor only pushes up. Touching the edge of the next flush block would otherwise turn forward speed
+            // into a hop, which then blocks the step-up onto the block after it.
+            nx = 0.0
+            ny = 1.0
+            nz = 0.0
+            vn = vy
+        }
         if (vn >= 0) return if (BallPhysics.isGround(ny)) Contact.GROUND else Contact.SIDE
 
         val restitution =
@@ -354,7 +368,7 @@ class BallSimulation(
     ): Boolean {
         val r = BallPhysics.RADIUS
         val height = box.maxY - (py - r)
-        if (height <= 0 || height > BallPhysics.STEP_HEIGHT + 1e-9) return false
+        if (height <= 0 || height > BallPhysics.STEP_HEIGHT + BallPhysics.SETTLE_DEPTH + 1e-9) return false
         val horizontalSquared = vx * vx + vz * vz
         val remaining = horizontalSquared - 2 * BallPhysics.GRAVITY * height * BallPhysics.STEP_COST
         if (remaining <= 0) return false
