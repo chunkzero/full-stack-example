@@ -7,10 +7,10 @@
       "hash": "7ac178c13133653c4f7a8c4f11e4086119a885892df8309464eaa25b100e7857"
     },
     {
-      "id": "0002_golf",
-      "kind": "expand",
+      "id": "0002_additive",
+      "kind": "additive",
       "prev": "7ac178c13133653c4f7a8c4f11e4086119a885892df8309464eaa25b100e7857",
-      "hash": "7fb27d2838ca7ac450684134b51059469a878f357c6fa43832e4f881776dce81"
+      "hash": "e28fcdd433ee27e9268053bc57bcab068d2102d0a476167d9f369d17b19904d1"
     }
   ]
 }

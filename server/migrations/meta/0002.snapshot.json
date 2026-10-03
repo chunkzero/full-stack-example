@@ -1,7 +1,7 @@
 {
-  "owned": {
+  "bests": {
     "fields": {
-      "item": {
+      "course": {
         "schema": {
           "type": "string"
         },
@@ -12,13 +12,20 @@
           "type": "player"
         },
         "optional": false
+      },
+      "total": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
       }
     },
     "indexes": {
-      "by_player": ["player", "item"]
+      "by_course": ["course", "total"],
+      "by_player_course": ["player", "course"]
     }
   },
-  "profiles": {
+  "golfers": {
     "fields": {
       "ball": {
         "schema": {
@@ -81,14 +88,103 @@
       "by_player": ["player"]
     }
   },
-  "results": {
+  "owned": {
     "fields": {
-      "at": {
+      "item": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_player": ["player", "item"]
+    }
+  },
+  "profiles": {
+    "fields": {
+      "coins": {
         "schema": {
           "type": "integer"
         },
         "optional": false
       },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      },
+      "visits": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_player": ["player"]
+    }
+  },
+  "records": {
+    "fields": {
+      "course": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      },
+      "shots": {
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "fields": {
+                "power": {
+                  "schema": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "yaw": {
+                  "schema": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          }
+        },
+        "optional": false
+      },
+      "total": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_course": ["course"]
+    }
+  },
+  "results": {
+    "fields": {
       "coins": {
         "schema": {
           "type": "integer"
@@ -131,32 +227,6 @@
         },
         "optional": false
       },
-      "shots": {
-        "schema": {
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "fields": {
-                "power": {
-                  "schema": {
-                    "type": "number"
-                  },
-                  "optional": false
-                },
-                "yaw": {
-                  "schema": {
-                    "type": "number"
-                  },
-                  "optional": false
-                }
-              }
-            }
-          }
-        },
-        "optional": false
-      },
       "total": {
         "schema": {
           "type": "integer"
@@ -171,8 +241,6 @@
       }
     },
     "indexes": {
-      "by_course": ["course", "total", "at"],
-      "by_player_course": ["player", "course", "total"],
       "by_round": ["round", "player"]
     }
   }

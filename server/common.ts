@@ -9,7 +9,7 @@ export const defaultBall = "classic";
 
 export const findProfile = (db: QueryContext["db"], player: PlayerId) =>
   db
-    .query("profiles")
+    .query("golfers")
     .withIndex("by_player", (q) => q.eq("player", player))
     .unique();
 
@@ -28,7 +28,7 @@ export function ensureProfile(db: MutationContext["db"], player: PlayerId, name 
     rankCoins: 0,
     rankHolesInOne: 0,
   };
-  return { ...fresh, _id: db.insert("profiles", fresh) };
+  return { ...fresh, _id: db.insert("golfers", fresh) };
 }
 
 export const hasItem = (db: QueryContext["db"], player: PlayerId, item: string) =>
