@@ -1,54 +1,61 @@
 import { button, label, panel, slot, slotRects, ui } from "#plugins/window";
+import { colors, plate, plateText, text } from "./theme.ts";
 
 const holes = Array.from({ length: 9 }, (_, i) => i + 1);
-const holeX = (hole: number) => 44 + (hole - 1) * 10;
-const firstLineY = 31;
-const lineGap = 10;
 const players = 8;
+const holeX = (hole: number) => 58 + (hole - 1) * 8;
+const headerY = 21;
+const parY = 33;
+const playerY = (row: number) => 47 + row * 11;
 
-function line(prefix: string, y: number) {
+/** Hole, total and score-to-par cells for one table row. */
+function cells(prefix: string, y: number, color: string = colors.white) {
   return [
     ...holes.map((hole) =>
-      slot(`${prefix}_h${hole}`, { x: holeX(hole), y, width: 10, align: "center", color: "#ffffff" }),
+      slot(`${prefix}_h${hole}`, { ...text, x: holeX(hole), y, width: 8, align: "center", color }),
     ),
-    slot(`${prefix}_total`, { x: 135, y, width: 17, align: "center", color: "#ffffff", bold: true }),
-    slot(`${prefix}_score`, { x: 153, y, width: 20, align: "right", color: "#ffffff", bold: true }),
+    slot(`${prefix}_total`, { ...text, x: 132, y, width: 16, align: "center", color }),
+    slot(`${prefix}_score`, { ...text, x: 150, y, width: 14, align: "right", color }),
   ];
 }
 
 export default ui({
   name: "scorecard",
-  container: "generic_9x6",
+  container: "generic_9x4",
   children: [
-    panel({ frame: "shell", x: 0, y: 0, width: 176, height: 222 }),
-    panel({ frame: "panel", x: 4, y: 3, width: 168, height: 13 }),
-    slot("course", { x: 8, y: 6, width: 160, align: "center", color: "#ffd75e", bold: true }),
-    panel({ frame: "recess", x: 3, y: 17, width: 170, height: 110 }),
-    label("PLAYER", { x: 5, y: 20, width: 38, color: "#a9d9b5" }),
-    ...holes.map((hole) =>
-      label(String(hole), { x: holeX(hole), y: 20, width: 10, align: "center", color: "#a9d9b5" }),
+    panel({ frame: "shell", x: 0, y: 0, width: 176, height: 186 }),
+    ...plate(),
+    slot("course", plateText),
+    panel({ frame: "recess", x: 8, y: 17, width: 160, height: 119 }),
+    ...Array.from({ length: players / 2 }, (_, i) =>
+      panel({ frame: "stripe", x: 10, y: playerY(i * 2 + 1) - 1, width: 156, height: 11 }),
     ),
-    label("TOT", { x: 135, y: 20, width: 17, align: "center", color: "#a9d9b5" }),
-    label("+/-", { x: 153, y: 20, width: 20, align: "right", color: "#a9d9b5" }),
-    panel({ frame: "recess", x: 5, y: 29, width: 166, height: 1 }),
-    label("PAR", { x: 5, y: firstLineY, width: 38, color: "#ffd75e", bold: true }),
-    ...line("par", firstLineY),
-    panel({ frame: "recess", x: 5, y: firstLineY + 9, width: 166, height: 1 }),
-    ...Array.from({ length: players }, (_, i) => {
-      const y = firstLineY + lineGap + 2 + i * lineGap;
-      return [slot(`p${i}_name`, { x: 5, y, width: 38, color: "#ffffff" }), ...line(`p${i}`, y)];
-    }).flat(),
-    label("Under par", { x: 8, y: 150, width: 52, align: "center", color: "#6fdc8c" }),
-    label("Par", { x: 62, y: 150, width: 52, align: "center", color: "#ffffff" }),
-    label("Over par", { x: 116, y: 150, width: 52, align: "center", color: "#ff6b6b" }),
+    label("Player", { ...text, x: 12, y: headerY, width: 44, color: colors.muted }),
+    ...holes.map((hole) =>
+      label(String(hole), { ...text, x: holeX(hole), y: headerY, width: 8, align: "center", color: colors.muted }),
+    ),
+    label("Tot", { ...text, x: 132, y: headerY, width: 16, align: "center", color: colors.muted }),
+    label("+/-", { ...text, x: 150, y: headerY, width: 14, align: "right", color: colors.muted }),
+    panel({ frame: "rule", x: 10, y: 30, width: 156, height: 1 }),
+    label("Par", { ...text, x: 12, y: parY, width: 44, color: colors.gold }),
+    ...cells("par", parY, colors.gold),
+    panel({ frame: "rule", x: 10, y: 43, width: 156, height: 1 }),
+    ...Array.from({ length: players }, (_, i) => [
+      slot(`p${i}_name`, { ...text, x: 12, y: playerY(i), width: 44 }),
+      ...cells(`p${i}`, playerY(i)),
+    ]).flat(),
+    panel({ frame: "recess", x: 8, y: 139, width: 160, height: 18 }),
+    label("Under par", { ...text, x: 8, y: 144, width: 54, align: "center", color: colors.green }),
+    label("Even", { ...text, x: 62, y: 144, width: 52, align: "center" }),
+    label("Over par", { ...text, x: 114, y: 144, width: 54, align: "center", color: colors.red }),
     button("back", {
-      frame: "button_accent",
+      frame: "button",
       transform: { section: "hotbar", x: 0, y: 0, width: 9, height: 1 },
       tooltip: { title: "Back to clubhouse", lines: ["Leave the course"] },
-      children: [label("BACK TO CLUBHOUSE", { color: "#2b1900", bold: true })],
+      children: [label("Back to clubhouse", text)],
     }),
     slotRects("container_fill", {
-      transform: { section: "container", x: 0, y: 0, width: 9, height: 6 },
+      transform: { section: "container", x: 0, y: 0, width: 9, height: 4 },
       claim: "unowned",
     }),
     slotRects("player_fill", {

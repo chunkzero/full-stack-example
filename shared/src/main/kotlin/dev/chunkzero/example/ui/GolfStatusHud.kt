@@ -19,7 +19,7 @@ data class GolfStatus(
 
 /**
  * Round HUD. Shader HUDs draw each slot in its authored colour, so the status colour comes from
- * [GolfStatus.kind] and the power meter is a row of fixed-colour segment slots.
+ * [GolfStatus.kind] and the power meter is a row of fixed-colour segment slots over a dim track.
  *
  * [power] is 0..1 while the meter is charging and null otherwise.
  */
@@ -33,13 +33,17 @@ class GolfStatusHud : HudView("golf") {
 
     override fun HudScope.bind() {
         slot("hole") { holeText() }
-        slot("par") { text("PAR $par") }
+        slot("par") { text("Par $par") }
         slot("stroke") { text(stroke.toString()) }
         for (kind in StatusKind.entries) {
-            slot(kind.slot) { status?.takeIf { it.kind == kind }?.let { text(fit(it.text, STATUS_WIDTH)) } ?: text("") }
+            slot(kind.slot) {
+                status?.takeIf { it.kind == kind }?.let { text(fit(it.text, STATUS_WIDTH, UiFont.SMALL_CAPS)) }
+                    ?: text("")
+            }
         }
         for (i in 0 until METER_SEGMENTS) {
             slot("power_$i") { if (i < filledSegments()) text("█") else text("") }
+            slot("power_track_$i") { if (power != null && i >= filledSegments()) text("█") else text("") }
         }
     }
 
@@ -47,8 +51,8 @@ class GolfStatusHud : HudView("golf") {
         val prefix = "HOLE $hole"
         if (holeName.isEmpty()) return text(prefix)
         val separator = "  ·  "
-        val budget = HOLE_WIDTH - textWidth(prefix + separator, bold = true)
-        return text(prefix + separator + fit(holeName, budget, bold = true))
+        val budget = HOLE_WIDTH - UiFont.VANILLA.width(prefix + separator, bold = true)
+        return text(prefix + separator + fit(holeName, budget, UiFont.VANILLA, bold = true))
     }
 
     private fun filledSegments(): Int = Math.round((power ?: return 0).coerceIn(0.0, 1.0) * METER_SEGMENTS).toInt()

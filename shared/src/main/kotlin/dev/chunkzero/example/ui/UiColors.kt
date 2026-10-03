@@ -1,6 +1,7 @@
 package dev.chunkzero.example.ui
 
 import dev.chunkzero.example.ui.generated.WindowFonts
+import dev.oglass.window.manifest.FontMetricsEntry
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 
@@ -18,22 +19,54 @@ internal fun text(
     color: TextColor = UiColors.WHITE,
 ): Component = Component.text(value, color)
 
-/** Rendered width in GUI pixels, from the generated font metrics. Bold adds one pixel per glyph. */
-internal fun textWidth(
-    value: String,
-    bold: Boolean = false,
-): Int = value.sumOf { (WindowFonts.advances[it.toString()] ?: DEFAULT_ADVANCE) + if (bold) 1 else 0 }
+/** The fonts the menus draw text with, measured from the generated font metrics. */
+internal enum class UiFont(
+    private val metrics: FontMetricsEntry,
+) {
+    VANILLA(FontMetricsEntry(WindowFonts.advances, boldAdvance = 1)),
+    SMALL_CAPS(
+        WindowFonts.metrics.entries
+            .first { "small_caps/" in it.key }
+            .value,
+    ),
+    ;
+
+    /** Rendered width in GUI pixels. */
+    fun width(
+        value: String,
+        bold: Boolean = false,
+    ): Int = value.sumOf { (metrics.advances[it.toString()] ?: DEFAULT_ADVANCE) + if (bold) metrics.boldAdvance else 0 }
+}
 
 /** Truncates [value] with a trailing "." so it renders within [maxWidth] pixels. */
 internal fun fit(
     value: String,
     maxWidth: Int,
+    font: UiFont,
     bold: Boolean = false,
 ): String {
-    if (textWidth(value, bold) <= maxWidth) return value
+    if (font.width(value, bold) <= maxWidth) return value
     var result = value
-    while (result.isNotEmpty() && textWidth("$result.", bold) > maxWidth) result = result.dropLast(1)
+    while (result.isNotEmpty() && font.width("$result.", bold) > maxWidth) result = result.dropLast(1)
     return "$result."
+}
+
+/**
+ * Splits [value] over at most two lines of [maxWidth] pixels, breaking at the last space that lets the first line fit.
+ * The second line is null when one line is enough, and truncated when two are not.
+ */
+internal fun wrap(
+    value: String,
+    maxWidth: Int,
+    font: UiFont,
+): Pair<String, String?> {
+    if (font.width(value) <= maxWidth) return value to null
+    val words = value.split(' ')
+    for (count in words.size - 1 downTo 1) {
+        val first = words.take(count).joinToString(" ")
+        if (font.width(first) <= maxWidth) return first to fit(words.drop(count).joinToString(" "), maxWidth, font)
+    }
+    return fit(value, maxWidth, font) to null
 }
 
 private const val DEFAULT_ADVANCE = 6

@@ -7,6 +7,7 @@ import dev.oglass.window.WindowPager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.minestom.server.component.DataComponents
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
@@ -45,25 +46,78 @@ class ShopMenu(
         if (opened) syncPager()
     }
 
-    override fun balance(): Component = text("◆ $coins", UiColors.GOLD)
+    override fun balance(): Component = text("$coins ◆", UiColors.GOLD)
 
     override fun page(): Component = text("Page ${pager.page(offset, skins.size)} / ${pager.pageCount(skins.size)}")
 
-    override fun message(): Component = message ?: text("")
+    override fun message(): Component =
+        messageLines().let { (first, second) ->
+            if (second ==
+                null
+            ) {
+                first
+            } else {
+                text("")
+            }
+        }
 
-    override fun prevLabel(): Component = pageLabel("< PREV", pager.canPrevious(offset))
+    override fun messageTop(): Component =
+        messageLines().let { (first, second) ->
+            if (second ==
+                null
+            ) {
+                text("")
+            } else {
+                first
+            }
+        }
 
-    override fun nextLabel(): Component = pageLabel("NEXT >", pager.canNext(offset, skins.size))
+    override fun messageBottom(): Component = messageLines().second ?: text("")
 
-    override fun entryName(index: Int): Component = skinAt(index)?.let { text(fit(it.name, 52)) } ?: text("")
+    override fun prevLabel(): Component = pageLabel("< Prev", pager.canPrevious(offset))
+
+    override fun nextLabel(): Component = pageLabel("Next >", pager.canNext(offset, skins.size))
+
+    override fun entryName(index: Int): Component =
+        nameLines(index).let { (first, second) ->
+            text(
+                if (second ==
+                    null
+                ) {
+                    first
+                } else {
+                    ""
+                },
+            )
+        }
+
+    override fun entryNameTop(index: Int): Component =
+        nameLines(index).let { (first, second) ->
+            text(
+                if (second ==
+                    null
+                ) {
+                    ""
+                } else {
+                    first
+                },
+            )
+        }
+
+    override fun entryNameBottom(index: Int): Component = text(nameLines(index).second ?: "")
 
     override fun entryPrice(index: Int): Component {
         val skin = skinAt(index) ?: return text("")
         return when {
-            skin.equipped -> text("Equipped", UiColors.GOLD)
+            skin.equipped -> text("In use", UiColors.GOLD)
             skin.owned -> text("Owned", UiColors.GREEN)
             else -> text("${skin.price} ◆", if (skin.price <= coins) UiColors.GOLD else UiColors.RED)
         }
+    }
+
+    override fun entryCardSprite(index: Int): String? {
+        val skin = skinAt(index) ?: return "card_empty"
+        return if (skin.equipped) "card_equipped" else null
     }
 
     override fun entryIconItem(index: Int): ItemStack? = skinAt(index)?.let(::icon)
@@ -99,6 +153,18 @@ class ShopMenu(
 
     private fun skinAt(cell: Int): BallSkin? = pager.itemIndex(offset, cell, skins.size)?.let(skins::get)
 
+    private fun nameLines(cell: Int): Pair<String, String?> =
+        skinAt(cell)?.let { wrap(it.name, NAME_WIDTH, UiFont.SMALL_CAPS) } ?: ("" to null)
+
+    /** The message, or the hint when there is none, over one or two lines in the message's own colour. */
+    private fun messageLines(): Pair<Component, Component?> {
+        val shown = message ?: text(HINT, UiColors.MUTED)
+        val color = shown.color() ?: UiColors.WHITE
+        val plain = PlainTextComponentSerializer.plainText().serialize(shown).replace("…", "...")
+        val (first, second) = wrap(plain, MESSAGE_WIDTH, UiFont.SMALL_CAPS)
+        return text(first, color) to second?.let { text(it, color) }
+    }
+
     private fun syncPager() {
         buttonState("prev", if (pager.canPrevious(offset)) "enabled" else "disabled")
         buttonState("next", if (pager.canNext(offset, skins.size)) "enabled" else "disabled")
@@ -129,4 +195,10 @@ class ShopMenu(
         value: String,
         color: TextColor,
     ): Component = text(value, color).decoration(TextDecoration.ITALIC, false)
+
+    private companion object {
+        const val NAME_WIDTH = 46
+        const val MESSAGE_WIDTH = 152
+        const val HINT = "Click a ball to buy or equip it"
+    }
 }
