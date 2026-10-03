@@ -63,10 +63,12 @@ class Putter(
     private fun onUse(event: PlayerUseItemEvent) {
         if (event.player != player || !isPutter(event.itemStack)) return
         event.isCancelled = true
-        // Holding the button repeats uses every few ticks; only fresh clicks count.
+        // Holding the button repeats uses every few ticks; every packet extends the hold, so only a click after a
+        // release gap counts.
         val tick = player.aliveTicks
-        if (tick - lastUse < DEBOUNCE_TICKS) return
+        val fresh = tick - lastUse >= DEBOUNCE_TICKS
         lastUse = tick
+        if (!fresh) return
         when {
             !armed -> {}
 

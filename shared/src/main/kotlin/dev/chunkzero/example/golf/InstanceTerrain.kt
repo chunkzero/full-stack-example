@@ -56,7 +56,7 @@ class InstanceTerrain(
             }
 
         fun surfaceOf(block: Block): Surface =
-            if (block.liquid()) {
+            if (block.fluid()) {
                 Surface.HAZARD
             } else {
                 surfaces[block.id()]

@@ -18,6 +18,12 @@ class InstanceTerrainTest {
         assertEquals(Surface.ICE, InstanceTerrain.surfaceOf(Block.BLUE_ICE))
         assertEquals(Surface.SAND, InstanceTerrain.surfaceOf(Block.SOUL_SAND))
         assertEquals(Surface.HAZARD, InstanceTerrain.surfaceOf(Block.LAVA))
+        assertEquals(
+            Surface.HAZARD,
+            InstanceTerrain.surfaceOf(
+                Block.STONE_SLAB.withProperty("type", "bottom").withProperty("waterlogged", "true"),
+            ),
+        )
         assertEquals(Surface.NORMAL, InstanceTerrain.surfaceOf(Block.MOSS_BLOCK))
     }
 }

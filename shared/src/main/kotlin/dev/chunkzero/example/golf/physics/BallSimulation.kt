@@ -140,6 +140,8 @@ class BallSimulation(
         val speedSquared = vx * vx + vy * vy + vz * vz
         restTicks = if (grounded && speedSquared < BallPhysics.REST_SPEED * BallPhysics.REST_SPEED) restTicks + 1 else 0
         if (restTicks >= BallPhysics.REST_TICKS || ticks >= BallPhysics.MAX_TICKS) {
+            // Flying above the region is fine, but a ball that stops up there is on a roof, not in play.
+            if (py >= region.max.y + 1) return stop(leftRegion())
             restPosition = position
             return stop(BallEvent.Rested(restPosition))
         }
@@ -208,18 +210,15 @@ class BallSimulation(
 
     private fun outcome(): BallEvent? {
         val inCup = px >= cup.x && px < cup.x + 1 && pz >= cup.z && pz < cup.z + 1
-        if (inCup && py < cup.y + 1 - BallPhysics.RADIUS) return BallEvent.Sunk(position)
+        if (inCup && py >= cup.y && py < cup.y + 1 - BallPhysics.RADIUS) return BallEvent.Sunk(position)
         if (terrain.surface(floor(px).toInt(), floor(py).toInt(), floor(pz).toInt()) == Surface.HAZARD) {
             return BallEvent.OutOfBounds(position, BallEvent.Reason.HAZARD, restPosition)
         }
         val inside = px >= region.min.x && px < region.max.x + 1 && pz >= region.min.z && pz < region.max.z + 1
-        if (!inside ||
-            py < region.min.y
-        ) {
-            return BallEvent.OutOfBounds(position, BallEvent.Reason.LEFT_REGION, restPosition)
-        }
-        return null
+        return if (!inside || py < region.min.y) leftRegion() else null
     }
+
+    private fun leftRegion() = BallEvent.OutOfBounds(position, BallEvent.Reason.LEFT_REGION, restPosition)
 
     private class WorldBox(
         val blockX: Int,

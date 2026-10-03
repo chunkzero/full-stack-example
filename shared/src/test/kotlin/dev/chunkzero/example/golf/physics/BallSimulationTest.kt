@@ -153,6 +153,25 @@ class BallSimulationTest {
     }
 
     @Test
+    fun `a ball rolling on a level below the cup does not sink`() {
+        val cup = BlockPos(0, -1, 3)
+        val lower = Grid().apply { fill(-10..10, -4, -10..80) }
+        val event = simulate(lower, Shot(0f, 0.35), from = Vec(0.5, -3 + BallPhysics.RADIUS, 0.5), cup = cup)
+        assertInstanceOf(BallEvent.Rested::class.java, event)
+    }
+
+    @Test
+    fun `a ball may fly above the region and return but is out of bounds when it rests above it`() {
+        val high = Vec(0.5, region.max.y + 3.0, 0.5)
+        assertInstanceOf(BallEvent.Rested::class.java, simulate(green(), Shot(0f, 0.0), from = high))
+
+        val roof = green().apply { fill(-10..10, region.max.y + 1, -10..80) }
+        val onRoof = simulate(roof, Shot(0f, 0.3), from = high)
+        assertEquals(BallEvent.Reason.LEFT_REGION, (onRoof as BallEvent.OutOfBounds).reason)
+        assertEquals(high, onRoof.resetPosition)
+    }
+
+    @Test
     fun `leaving the region or entering water is out of bounds`() {
         val left = simulate(green(), Shot(180f, 1.0))
         assertEquals(BallEvent.Reason.LEFT_REGION, (left as BallEvent.OutOfBounds).reason)
