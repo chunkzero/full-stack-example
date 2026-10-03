@@ -1,50 +1,58 @@
-import { query, mutation, v } from "#chunk";
-import type { JsonValue } from "#chunk";
+import { mutation, query, v } from "#chunk";
+import { callerPlayer, defaultBall, ensureProfile, findProfile } from "./common.ts";
 
-const identity = v.object({ session: v.session(), app: v.string(), player: v.player() });
-const player = (caller: JsonValue) => identity.parse(caller).player;
-const statistics = v.object({ coins: v.integer(), visits: v.integer() });
-
-export const stats = query({
-  args: {},
-  returns: statistics,
-  handler: ({ db, caller }) => {
-    const profile = db
-      .query("profiles")
-      .withIndex("by_player", (q) => q.eq("player", player(caller)))
-      .unique();
-    return { coins: profile?.coins ?? 0, visits: profile?.visits ?? 0 };
-  },
-});
+/** Level 1 starts at 0 xp; advancing from level n takes 100 * n xp. */
+function levelOf(xp: number) {
+  let level = 1;
+  let start = 0;
+  while (xp >= start + 100 * level) {
+    start += 100 * level;
+    level += 1;
+  }
+  return { level, levelXp: xp - start, nextLevelXp: 100 * level };
+}
 
 export const join = mutation({
-  args: {},
-  returns: v.integer(),
-  handler: ({ db, caller }) => {
-    const id = player(caller);
-    const profile = db
-      .query("profiles")
-      .withIndex("by_player", (q) => q.eq("player", id))
-      .unique();
-    const visits = (profile?.visits ?? 0) + 1;
-    if (profile) db.patch(profile._id, { visits });
-    else db.insert("profiles", { player: id, coins: 0, visits });
-    return visits;
+  args: { name: v.string() },
+  returns: v.null(),
+  handler: ({ db, caller }, { name }) => {
+    const profile = ensureProfile(db, callerPlayer(caller), name);
+    if (profile.name !== name) db.patch(profile._id, { name });
+    return null;
   },
 });
 
-export const coin = mutation({
+export const profile = query({
   args: {},
-  returns: v.integer(),
+  returns: v.object({
+    name: v.string(),
+    coins: v.integer(),
+    xp: v.integer(),
+    level: v.integer(),
+    levelXp: v.integer(),
+    nextLevelXp: v.integer(),
+    rounds: v.integer(),
+    holesInOne: v.integer(),
+    ball: v.string(),
+    owned: v.array(v.string()),
+  }),
   handler: ({ db, caller }) => {
-    const id = player(caller);
-    const profile = db
-      .query("profiles")
-      .withIndex("by_player", (q) => q.eq("player", id))
-      .unique();
-    const coins = (profile?.coins ?? 0) + 1;
-    if (profile) db.patch(profile._id, { coins });
-    else db.insert("profiles", { player: id, coins, visits: 0 });
-    return coins;
+    const player = callerPlayer(caller);
+    const found = findProfile(db, player);
+    const owned = db
+      .query("owned")
+      .withIndex("by_player", (q) => q.eq("player", player))
+      .collect(1000)
+      .map(({ item }) => item);
+    return {
+      name: found?.name ?? "Player",
+      coins: found?.coins ?? 0,
+      xp: found?.xp ?? 0,
+      ...levelOf(found?.xp ?? 0),
+      rounds: found?.rounds ?? 0,
+      holesInOne: found?.holesInOne ?? 0,
+      ball: found?.ball ?? defaultBall,
+      owned,
+    };
   },
 });

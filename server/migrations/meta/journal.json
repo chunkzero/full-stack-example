@@ -5,6 +5,12 @@
       "id": "0001_additive",
       "kind": "additive",
       "hash": "7ac178c13133653c4f7a8c4f11e4086119a885892df8309464eaa25b100e7857"
+    },
+    {
+      "id": "0002_golf",
+      "kind": "expand",
+      "prev": "7ac178c13133653c4f7a8c4f11e4086119a885892df8309464eaa25b100e7857",
+      "hash": "7fb27d2838ca7ac450684134b51059469a878f357c6fa43832e4f881776dce81"
     }
   ]
 }
