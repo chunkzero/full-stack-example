@@ -43,7 +43,8 @@ export const record = mutation({
     if (strokes.length !== pars.length || shots.length !== pars.length)
       throw new Error(`${course} has ${pars.length} holes`);
     if (!strokes.every((s) => s >= 1 && s <= 20)) throw new Error("Strokes must be between 1 and 20");
-    if (!shots.every((hole, i) => hole.length === strokes[i])) throw new Error("Shots must match strokes");
+    // Penalties are strokes without shots, and a hole that timed out may have none.
+    if (!shots.every((hole, i) => hole.length <= strokes[i])) throw new Error("A hole has more shots than strokes");
     if (!shots.every((hole) => hole.every(({ yaw, power }) => Number.isFinite(yaw) && power >= 0 && power <= 1)))
       throw new Error("Shots need a finite yaw and power from 0 to 1");
 
