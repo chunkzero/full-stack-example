@@ -1,6 +1,5 @@
 import { command, defineApp } from "#chunk";
-
-import { population } from "../../server/session-methods.ts";
+import { apps } from "#chunk/apps";
 
 export default defineApp({
   id: "lobby",
@@ -9,10 +8,9 @@ export default defineApp({
     main: { implementation: "default", key: "lobby" },
   },
   commands: {
-    players: command("population", {
+    play: command("play", {
       handler: async (ctx) => {
-        const count = await ctx.session.call(population, {});
-        await ctx.player.message(`This lobby has ${count} player(s).`);
+        await ctx.routing.enter(apps.golf.destinations.oakmere);
       },
     }),
   },

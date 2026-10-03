@@ -7,4 +7,4 @@ kotlin { compilerOptions { allWarningsAsErrors = true } }
 
 dependencies { implementation(project(":shared")) }
 
-application { mainClass = "dev.chunkzero.example.arena.ArenaSessionsKt" }
+application { mainClass = "dev.chunkzero.example.golf.GolfSessionsKt" }

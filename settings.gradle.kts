@@ -1,7 +1,9 @@
 import dev.chunkzero.gradle.ChunkSettingsExtension
 
+// Chunk and Window are built from local checkouts until their nightlies are published; see `just local-deps`.
 pluginManagement {
     repositories {
+        mavenLocal { content { includeGroupByRegex("dev\\.chunkzero(\\..*)?") } }
         maven("https://maven.chunkzero.com")
         gradlePluginPortal()
         mavenCentral()
@@ -20,6 +22,7 @@ extensions.configure<ChunkSettingsExtension> {
 
 dependencyResolutionManagement {
     repositories {
+        mavenLocal { content { includeGroupByRegex("dev\\.(chunkzero|oglass\\.window)(\\..*)?") } }
         maven("https://maven.chunkzero.com")
         maven("https://maven.chunkzero.com/snapshots") {
             mavenContent { includeModule("net.minestom", "minestom") }

@@ -1,9 +1,2 @@
 version = 3
-
-[[package]]
-name = "window"
-requested = "0.1.0-nightly.20261002.g67305fc8e4c3"
-version = "0.1.0-nightly.20261002.g67305fc8e4c3"
-rpp = ">=0.1.0-alpha.0"
-url = "https://github.com/chunkzero/window/releases/download/v0.1.0-nightly.20261002.g67305fc8e4c3/window-0.1.0-nightly.20261002.g67305fc8e4c3.rpp.tgz"
-sha256 = "fc5411dadd63aa79df948584dbb13acaf53e759e8d5570439b633f70a9a9543e"
+package = []

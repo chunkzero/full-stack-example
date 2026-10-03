@@ -9,13 +9,7 @@ kotlin { compilerOptions { allWarningsAsErrors = true } }
 
 dependencies {
     implementation(libs.window.runtime)
-    testImplementation("dev.chunkzero:proto:${libs.versions.chunk.get()}")
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testRuntimeOnly(libs.junit.platform.launcher)
 }
-
-tasks.test { useJUnitPlatform() }
 
 val prepareResourcePack =
     tasks.register("prepareResourcePack") {

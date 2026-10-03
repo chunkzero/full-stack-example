@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "kinds": {
+    "spawn": { "shape": "point", "color": "#55FF55", "icon": "⚑", "description": "Where players arrive in this world" },
+    "tee": {
+      "shape": "point",
+      "color": "#FFFFFF",
+      "icon": "⛳",
+      "description": "Ball start for a hole; yaw faces the intended first shot",
+      "properties": {
+        "hole": {
+          "type": "int",
+          "required": true,
+          "min": 0,
+          "max": 18,
+          "description": "Hole number; 0 is the lobby practice green"
+        }
+      }
+    },
+    "cup": {
+      "shape": "block",
+      "color": "#FFFF55",
+      "icon": "◉",
+      "description": "The empty block the ball drops into",
+      "properties": { "hole": { "type": "int", "required": true, "min": 0, "max": 18 } }
+    },
+    "hole": {
+      "shape": "region",
+      "color": "#55FFFF",
+      "icon": "▢",
+      "description": "Playable area of a hole; a ball outside it is out of bounds",
+      "properties": {
+        "hole": { "type": "int", "required": true, "min": 0, "max": 18 },
+        "par": { "type": "int", "required": true, "min": 2, "max": 6 },
+        "name": { "type": "string", "required": true, "description": "Display name, e.g. Windmill Hollow" }
+      }
+    },
+    "portal": {
+      "shape": "region",
+      "color": "#AA00FF",
+      "icon": "✦",
+      "description": "Walking in opens the play menu",
+      "properties": { "destination": { "type": "enum", "required": true, "values": ["golf"] } }
+    },
+    "leaderboard": {
+      "shape": "point",
+      "color": "#FFAA00",
+      "icon": "★",
+      "description": "Where a floating leaderboard is drawn; yaw faces the reader",
+      "properties": {
+        "board": { "type": "enum", "required": true, "values": ["course_record", "holes_in_one", "coins"] }
+      }
+    },
+    "npc": {
+      "shape": "point",
+      "color": "#FF55FF",
+      "icon": "☺",
+      "description": "Interactive NPC; yaw faces the player approach",
+      "properties": { "id": { "type": "enum", "required": true, "values": ["shop", "profile", "caddie"] } }
+    }
+  }
+}
