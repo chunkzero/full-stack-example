@@ -48,21 +48,20 @@ fun showLeaderboards(
         }
         display.setInstance(instance, mark.position.sub(0.0, HALF_HEIGHT, 0.0))
         val course = if (board == Board.course_record) OAKMERE else null
-        backend.shared.leaderboards
-            .watchLeaderboard(LeaderboardArgs(board, course))
-            .values()
-            .onEach { rows ->
-                display.editEntityMeta(TextDisplayMeta::class.java) {
-                    it.text =
-                        renderLeaderboard(board, rows)
-                }
-            }.launchIn(scope.coroutines)
+        watching("leaderboard $board") {
+            backend.shared.leaderboards.watchLeaderboard(LeaderboardArgs(board, course))
+        }.onEach { live ->
+            display.editEntityMeta(TextDisplayMeta::class.java) {
+                it.text = renderLeaderboard(board, live.latest?.value() ?: emptyList(), live.freshness)
+            }
+        }.launchIn(scope.coroutines)
     }
 }
 
 fun renderLeaderboard(
     board: Board,
     rows: List<LeaderboardResultItem>,
+    freshness: Freshness = Freshness.LIVE,
 ): Component {
     val (title, subtitle) =
         when (board) {
@@ -76,7 +75,19 @@ fun renderLeaderboard(
             .append(Component.text(title.uppercase(), GOLD, TextDecoration.BOLD))
             .appendNewline()
             .append(Component.text(subtitle, NamedTextColor.GRAY))
-            .appendNewline()
+            .also {
+                when (freshness) {
+                    Freshness.LIVE -> {}
+
+                    Freshness.UPDATING -> {
+                        it.append(Component.text(" · updating…", NamedTextColor.DARK_GRAY))
+                    }
+
+                    Freshness.OFFLINE -> {
+                        it.append(Component.text(" · offline", NamedTextColor.DARK_GRAY))
+                    }
+                }
+            }.appendNewline()
     for (rank in 1..ROWS) {
         text.appendNewline().append(row(board, rank, rows.getOrNull(rank - 1)))
     }

@@ -45,11 +45,10 @@ class Menus(
     private var record: CourseRecord? = null
 
     init {
-        backend.shared.rounds
-            .watchCourseRecord(CourseRecordArgs(OAKMERE))
-            .values()
-            .onEach { result ->
-                record = result?.let { CourseRecord(it.name(), it.total().toInt()) }
+        watching("course record") { backend.shared.rounds.watchCourseRecord(CourseRecordArgs(OAKMERE)) }
+            .onEach { live ->
+                val latest = live.latest ?: return@onEach
+                record = latest.value()?.let { CourseRecord(it.name(), it.total().toInt()) }
                 visitors.values.forEach { (it.window?.view as? PlayMenu)?.record = record }
             }.launchIn(scope.coroutines)
     }
@@ -81,27 +80,41 @@ class Menus(
 
     fun openShop(visitor: Visitor) =
         load(visitor) {
-            val profile =
-                visitor.backend.shared.players
-                    .profile()
-            visitor.profile = profile
+            val profile = currentProfile(visitor)
             ShopMenu(ballSkins(catalog.items(), profile), profile.coins().toInt()) { onSkin(visitor, it) }
         }
 
     fun openProfile(visitor: Visitor) =
         load(visitor) {
-            val profile =
-                visitor.profile ?: visitor.backend.shared.players
-                    .profile()
+            val profile = currentProfile(visitor)
             ProfileMenu(card(profile, catalog.items().firstOrNull { it.id() == profile.ball() }))
         }
 
-    /** Pushes a fresh profile into whichever of the player's menus shows it. */
-    fun profileChanged(visitor: Visitor) {
+    /** The watched profile, or a one-off query until the watch delivers its first value. */
+    private suspend fun currentProfile(visitor: Visitor): ProfileResult =
+        visitor.profile ?: visitor.backend.shared.players
+            .profile()
+
+    /** Pushes the live profile into whichever of the player's menus shows it, hinting when it may be out of date. */
+    fun profileChanged(
+        visitor: Visitor,
+        freshness: Freshness,
+    ) {
         val profile = visitor.profile ?: return
         when (val view = visitor.window?.view) {
-            is ProfileMenu -> view.card = card(profile, catalog.cached.firstOrNull { it.id() == profile.ball() })
-            is ShopMenu -> view.update(ballSkins(catalog.cached, profile), profile.coins().toInt())
+            is ProfileMenu -> {
+                view.card = card(profile, catalog.cached.firstOrNull { it.id() == profile.ball() })
+            }
+
+            is ShopMenu -> {
+                view.update(ballSkins(catalog.cached, profile), profile.coins().toInt())
+                val hint = HINTS[freshness]
+                if (hint != null) {
+                    if (view.message == null || view.message in HINTS.values) view.message = hint
+                } else if (view.message in HINTS.values) {
+                    view.message = null
+                }
+            }
         }
     }
 
@@ -150,7 +163,7 @@ class Menus(
         scope.coroutines.launch {
             val message =
                 try {
-                    shop(visitor, skin)
+                    shop(visitor, skin).also { visitor.settled() }
                 } catch (error: CancellationException) {
                     throw error
                 } catch (error: Exception) {
@@ -159,15 +172,7 @@ class Menus(
                 } finally {
                     visitor.busy = false
                 }
-            val shop = visitor.window?.view as? ShopMenu ?: return@launch
-            runCatching {
-                visitor.backend.shared.players
-                    .profile()
-            }.getOrNull()?.let {
-                visitor.profile = it
-                shop.update(ballSkins(catalog.cached, it), it.coins().toInt())
-            }
-            shop.message = message
+            (visitor.window?.view as? ShopMenu)?.message = message
         }
     }
 
@@ -176,9 +181,10 @@ class Menus(
         skin: BallSkin,
     ): Component {
         val shop = visitor.backend.shared.shop
+        val click = visitor.operation(if (skin.owned) "equip" else "buy", skin.id)
         if (skin.equipped) return Component.text("You're already playing the ${skin.name} ball.", NamedTextColor.GRAY)
         if (!skin.owned) {
-            val bought = shop.buy(BuyArgs(skin.id), operation(visitor, "buy"))
+            val bought = shop.buy(BuyArgs(skin.id), scope.operationId(visitor.player, click))
             when (bought) {
                 BuyResult.bought, BuyResult.owned -> {}
 
@@ -191,18 +197,13 @@ class Menus(
                 }
             }
         }
-        val equipped = shop.equip(EquipArgs(skin.id), operation(visitor, "equip"))
+        val equipped = shop.equip(EquipArgs(skin.id), scope.operationId(visitor.player, "$click-equip"))
         return when {
             !equipped -> Component.text("Couldn't equip ${skin.name}.", NamedTextColor.RED)
             skin.owned -> Component.text("Equipped ${skin.name}.", NamedTextColor.GREEN)
             else -> Component.text("Bought and equipped ${skin.name}!", NamedTextColor.GREEN)
         }
     }
-
-    private fun operation(
-        visitor: Visitor,
-        action: String,
-    ) = scope.operationId(visitor.player, visitor.nextOperation(action))
 
     private fun card(
         profile: ProfileResult,
@@ -221,5 +222,10 @@ class Menus(
 
     private companion object {
         val logger = LoggerFactory.getLogger(Menus::class.java)!!
+        val HINTS =
+            mapOf(
+                Freshness.UPDATING to Component.text("Updating…", NamedTextColor.GRAY),
+                Freshness.OFFLINE to Component.text("Offline: showing your last known balance.", NamedTextColor.GRAY),
+            )
     }
 }

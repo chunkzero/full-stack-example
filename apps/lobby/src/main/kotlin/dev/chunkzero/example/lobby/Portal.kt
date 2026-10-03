@@ -19,28 +19,37 @@ import net.minestom.server.entity.EntityType
 import net.minestom.server.entity.Player
 import net.minestom.server.entity.metadata.display.AbstractDisplayMeta
 import net.minestom.server.entity.metadata.display.TextDisplayMeta
-import net.minestom.server.event.player.PlayerMoveEvent
 import net.minestom.server.instance.Instance
 import net.minestom.server.sound.SoundEvent
 
 /** Whether a player standing at [position] has their feet or head inside the region. */
 fun BlockRegion.containsPlayer(position: Point) = contains(position) || contains(position.add(0.0, 1.0, 0.0))
 
-/** Calls [onEnter] once each time a player walks into one of the [regions], with a label above each. */
+/** Calls [onEnter] once each time a player is found inside one of the [regions] after being outside, with a label above each. */
 class Portal(
     scope: SessionScope,
     instance: Instance,
     private val regions: List<BlockRegion>,
     private val onEnter: (Player) -> Unit,
 ) {
+    private val members = HashSet<Player>()
+
     init {
         regions.forEach { label(scope, instance, it) }
-        scope.events.addListener(PlayerMoveEvent::class.java) { event ->
-            if (inside(event.newPosition) && !inside(event.player.position)) onEnter(event.player)
-        }
     }
 
-    private fun inside(position: Point) = regions.any { it.containsPlayer(position) }
+    /** Reconciles membership with where [players] actually are, so teleports count like walking. */
+    fun update(players: Collection<Player>) {
+        members.retainAll(players.toSet())
+        for (player in players) {
+            val inside = regions.any { it.containsPlayer(player.position) }
+            if (!inside) {
+                members.remove(player)
+            } else if (members.add(player)) {
+                onEnter(player)
+            }
+        }
+    }
 
     private fun label(
         scope: SessionScope,

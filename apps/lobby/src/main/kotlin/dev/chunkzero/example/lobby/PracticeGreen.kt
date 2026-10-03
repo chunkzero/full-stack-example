@@ -12,7 +12,6 @@ import dev.chunkzero.runtime.SessionScope
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.entity.Player
-import net.minestom.server.event.player.PlayerMoveEvent
 import net.minestom.server.instance.Instance
 import net.minestom.server.timer.Task
 import net.minestom.server.timer.TaskSchedule
@@ -20,7 +19,8 @@ import dev.chunkzero.example.golf.BallSkin as BallLook
 
 /**
  * The practice green: stepping onto [hole] swaps the hotbar for a putter and the player's own ball at the tee. Nothing
- * is scored; walking off removes both and calls [onLeave] to restore the hotbar.
+ * is scored; leaving by any means removes both and calls [onLeave] to restore the hotbar. Each player keeps one putter
+ * for the whole session, armed only while practising.
  */
 class PracticeGreen(
     private val scope: SessionScope,
@@ -31,22 +31,42 @@ class PracticeGreen(
 ) {
     private val terrain = InstanceTerrain(instance)
     private val practices = HashMap<Player, Practice>()
+    private val putters = HashMap<Player, Putter>()
 
-    init {
-        scope.events.addListener(PlayerMoveEvent::class.java) { event ->
-            val inside = hole.region.containsPlayer(event.newPosition)
-            if (inside == hole.region.containsPlayer(event.player.position)) return@addListener
-            if (inside) start(event.player) else stop(event.player)
+    fun join(player: Player) {
+        putters[player] =
+            Putter(
+                scope,
+                player,
+                ball = { practices[player]?.ball?.position ?: player.position },
+                onShot = { practices[player]?.onShot(it) },
+            )
+        scope.own(
+            player,
+            AutoCloseable {
+                practices.remove(player)?.close()
+                putters.remove(player)
+            },
+        )
+    }
+
+    /** Reconciles who is practising with where [players] actually are, so teleports count like walking. */
+    fun update(players: Collection<Player>) {
+        for (player in players) {
+            val practice = practices[player]
+            if (practice?.resetting == true) {
+                practice.resetting = false
+            } else if (hole.region.containsPlayer(player.position)) {
+                if (practice == null) start(player)
+            } else if (practice != null) {
+                stop(player)
+            }
         }
     }
 
-    fun join(player: Player) {
-        scope.own(player, AutoCloseable { practices.remove(player)?.close() })
-    }
-
     private fun start(player: Player) {
-        if (player in practices) return
-        practices[player] = Practice(player, lookOf(player))
+        val putter = putters[player] ?: return
+        practices[player] = Practice(player, putter, lookOf(player))
     }
 
     private fun stop(player: Player) {
@@ -57,13 +77,15 @@ class PracticeGreen(
 
     private inner class Practice(
         private val player: Player,
+        private val putter: Putter,
         look: BallLook,
     ) : AutoCloseable {
+        /** Set when the practice moves the player itself, so the next check doesn't read the teleport as leaving. */
+        var resetting = false
         private var strokes = 0
         private var notice: Component? = null
         private var reset: Task? = null
-        private val ball = GolfBall(scope, instance, terrain, hole, look, onEvent = ::onBall)
-        private val putter = Putter(scope, player, ball = { ball.position }, onShot = ::onShot)
+        val ball = GolfBall(scope, instance, terrain, hole, look, onEvent = ::onBall)
         private val status =
             scope.scheduler
                 .buildTask(::showStatus)
@@ -83,7 +105,7 @@ class PracticeGreen(
             putter.armed = true
         }
 
-        private fun onShot(shot: Shot) {
+        fun onShot(shot: Shot) {
             strokes++
             notice = null
             ball.shoot(shot)
@@ -116,6 +138,7 @@ class PracticeGreen(
             strokes = 0
             notice = null
             ball.place(hole.ballStart)
+            resetting = true
             placeBehind(player, ball.position, hole.cup.bottomCenter())
             putter.armed = true
         }
@@ -142,7 +165,7 @@ class PracticeGreen(
         override fun close() {
             status.cancel()
             reset?.cancel()
-            putter.close()
+            putter.armed = false
             ball.close()
         }
     }

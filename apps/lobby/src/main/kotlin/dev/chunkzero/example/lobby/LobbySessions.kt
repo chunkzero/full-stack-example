@@ -12,6 +12,7 @@ import dev.chunkzero.runtime.SessionProvider
 import dev.chunkzero.runtime.SessionScope
 import dev.chunkzero.runtime.SessionType
 import dev.chunkzero.runtime.coroutines
+import dev.chunkzero.runtime.repeatEvery
 import dev.oglass.window.Windows
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.launchIn
@@ -24,6 +25,7 @@ import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
 import net.minestom.server.item.ItemStack
 import org.slf4j.LoggerFactory
+import kotlin.time.Duration.Companion.milliseconds
 import dev.chunkzero.example.golf.BallSkin as BallLook
 
 @SessionType("default")
@@ -52,7 +54,14 @@ class LobbySession : CoroutineSession() {
         menus = Menus(scope, scope.component(Windows::class.java), backend, catalog, visitors, departures::teeOff)
         hotbar = Hotbar(scope) { player, item -> visitors[player]?.let { menus.open(it, item) } }
         green = PracticeGreen(scope, instance, course.hole(0), ::ballLook, hotbar::give)
-        Portal(scope, instance, course.portals.map { it.region }) { player -> visitors[player]?.let(menus::openPlay) }
+        val portal =
+            Portal(scope, instance, course.portals.map { it.region }) { player ->
+                visitors[player]?.let(menus::openPlay)
+            }
+        scope.repeatEvery(REGION_CHECK) {
+            portal.update(visitors.keys)
+            green.update(visitors.keys)
+        }
         spawnNpcs(scope, instance, course.npcs) { player, item -> visitors[player]?.let { menus.open(it, item) } }
         showLeaderboards(scope, instance, course.leaderboards, backend)
     }
@@ -103,12 +112,10 @@ class LobbySession : CoroutineSession() {
                 ),
         )
         val profiles =
-            players
-                .watchProfile()
-                .values()
-                .onEach {
-                    visitor.profile = it
-                    menus.profileChanged(visitor)
+            watching("profile ${player.username}") { players.watchProfile() }
+                .onEach { live ->
+                    live.latest?.let { visitor.profile = it.value() }
+                    menus.profileChanged(visitor, live.freshness)
                 }.launchIn(scope.coroutines)
         scope.own(player, AutoCloseable { profiles.cancel() })
     }
@@ -120,6 +127,7 @@ class LobbySession : CoroutineSession() {
     }
 
     private companion object {
+        val REGION_CHECK = 100.milliseconds
         val logger = LoggerFactory.getLogger(LobbySession::class.java)!!
     }
 }
