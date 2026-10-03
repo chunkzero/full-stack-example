@@ -7,10 +7,14 @@ import dev.chunkzero.example.generated.BackendTypes.Shared.Shop.CatalogResultIte
 import dev.chunkzero.example.generated.CoroutineBackendClient
 import dev.chunkzero.example.ui.BallSkin
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.transformLatest
 import net.minestom.server.item.Material
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration.Companion.seconds
@@ -22,6 +26,13 @@ private val logger = LoggerFactory.getLogger("dev.chunkzero.example.lobby.Backen
 private val MIN_BACKOFF = 1.seconds
 private val MAX_BACKOFF = 30.seconds
 
+/**
+ * How long an error state may go unanswered. The client reconnects retryable failures within about a second and
+ * publishes again, but a terminal error such as gRPC INTERNAL leaves the stream stopped with the error state as its
+ * last state, and the state carries no flag to tell the two apart (`GroupSubscription.failed`).
+ */
+private val ERROR_GRACE = 10.seconds
+
 enum class Freshness { LIVE, UPDATING, OFFLINE }
 
 /** A watch's latest value, if any has arrived, and how current it is. */
@@ -32,9 +43,11 @@ class Live<T>(
 
 /**
  * A watch that outlives failures: a collector that falls behind or an ended subscription is logged and resubscribed
- * with a doubling delay, and the last value stays available while [Live.freshness] says it may be out of date. Stops
- * only when the collecting scope is cancelled.
+ * with a doubling delay, and the last value stays available while [Live.freshness] says it may be out of date. An error
+ * state that nothing follows within [ERROR_GRACE] is terminal: the subscription is closed and resubscribed. Stops only
+ * when the collecting scope is cancelled.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 fun <T> watching(
     name: String,
     watch: () -> Flow<WatchState<T>>,
@@ -44,6 +57,14 @@ fun <T> watching(
         var backoff = MIN_BACKOFF
         while (true) {
             watch()
+                .transformLatest { state ->
+                    emit(state)
+                    if (state.error().isPresent) {
+                        delay(ERROR_GRACE)
+                        emit(null)
+                    }
+                }.takeWhile { it != null }
+                .filterNotNull()
                 .catch { error ->
                     if (error is CancellationException) throw error
                     logger.warn("Watch {} failed; resubscribing", name, error)
