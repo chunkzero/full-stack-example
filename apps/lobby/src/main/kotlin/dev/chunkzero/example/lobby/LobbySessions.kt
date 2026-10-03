@@ -56,7 +56,7 @@ class LobbySession : CoroutineSession() {
         green = PracticeGreen(scope, instance, course.hole(0), ::ballLook, hotbar::give)
         val portal =
             Portal(scope, instance, course.portals.map { it.region }) { player ->
-                visitors[player]?.let(menus::openPlay)
+                if (player in visitors) departures.teeOff(player)
             }
         scope.repeatEvery(REGION_CHECK) {
             portal.update(visitors.keys)
