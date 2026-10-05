@@ -1,4 +1,5 @@
-import { label, panel, presets, sprite, theme } from "#plugins/window";
+import { Box, Header, presets, Sprite, Text, theme } from "#plugins/window";
+import type { TextProps } from "#plugins/window";
 
 export const colors = {
   gold: "#ffd75e",
@@ -10,24 +11,23 @@ export const colors = {
 };
 
 /** Small caps with a drop shadow: the default style for labels and values. */
-export const text = { small_caps: true, shadow: true, color: colors.white };
+export const text: TextProps = { smallCaps: true, shadow: true, color: colors.white };
 /** Vanilla bold with a drop shadow, for headings and the primary action. */
-export const heading = { bold: true, shadow: true, color: colors.gold };
+export const heading: TextProps = { smallCaps: false, bold: true, shadow: true, color: colors.gold };
 
-/** A wood plate across the top of a window, with brass nails at its ends. */
-export function plate(y = 3) {
-  return [
-    panel({ frame: "wood", x: 8, y, width: 160, height: 12 }),
-    sprite("nail", { x: 11, y: y + 4 }),
-    sprite("nail", { x: 162, y: y + 4 }),
-  ];
-}
-
-/** Text centered on the top plate; pass it to `label` or `slot`. */
-export const plateText = { ...text, x: 8, y: 5, width: 160, align: "center", color: colors.gold } as const;
-
-export function titlePlate(title: string) {
-  return [...plate(), label(title, plateText)];
+/** A wood plate across the top of a window, with brass nails at its ends and a static or bound title centered on it. */
+export function TitlePlate(props: { title?: string; bind?: string }) {
+  return (
+    <Header padding={{ top: 3 }} align="start">
+      <Box frame="wood" width={160} height={12} align="center">
+        <Sprite name="nail" absolute left={3} top={4} />
+        <Sprite name="nail" absolute right={3} top={4} />
+        <Text bind={props.bind} width={160} align="center" color={colors.gold}>
+          {props.title}
+        </Text>
+      </Box>
+    </Header>
+  );
 }
 
 const industrial = presets.industrial({
