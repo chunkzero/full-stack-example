@@ -17,8 +17,17 @@ function holeCoins(strokes: number, par: number) {
 
 const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
 
+const golfSession = v.object({ session: v.session(), app: v.literal("golf"), player: v.optional(v.player()) });
+
+/** Saves a finished round for `player`. Only a golf session acting for itself may call it, so it works after the player left. */
 export const record = mutation({
-  args: { round: v.string(), course: v.string(), strokes: v.array(v.integer()), shots: v.array(v.array(shot)) },
+  args: {
+    player: v.player(),
+    round: v.string(),
+    course: v.string(),
+    strokes: v.array(v.integer()),
+    shots: v.array(v.array(shot)),
+  },
   returns: v.object({
     coins: v.integer(),
     xp: v.integer(),
@@ -27,8 +36,9 @@ export const record = mutation({
     personalBest: v.boolean(),
     courseRecord: v.boolean(),
   }),
-  handler: ({ db, caller }, { round, course, strokes, shots }) => {
-    const player = callerPlayer(caller);
+  handler: ({ db, caller }, { player, round, course, strokes, shots }) => {
+    if (golfSession.parse(caller).player !== undefined)
+      throw new Error("Rounds are recorded by the session, not a player");
     const earlier = db
       .query("results")
       .withIndex("by_round", (q) => q.eq("round", round).eq("player", player))
@@ -43,7 +53,8 @@ export const record = mutation({
     if (strokes.length !== pars.length || shots.length !== pars.length)
       throw new Error(`${course} has ${pars.length} holes`);
     if (!strokes.every((s) => s >= 1 && s <= 20)) throw new Error("Strokes must be between 1 and 20");
-    if (!shots.every((hole, i) => hole.length === strokes[i])) throw new Error("Shots must match strokes");
+    // Penalties are strokes without shots, and a hole that timed out may have none.
+    if (!shots.every((hole, i) => hole.length <= strokes[i])) throw new Error("A hole has more shots than strokes");
     if (!shots.every((hole) => hole.every(({ yaw, power }) => Number.isFinite(yaw) && power >= 0 && power <= 1)))
       throw new Error("Shots need a finite yaw and power from 0 to 1");
 
