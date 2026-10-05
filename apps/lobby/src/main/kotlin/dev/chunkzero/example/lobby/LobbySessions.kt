@@ -1,15 +1,17 @@
 package dev.chunkzero.example.lobby
 
+import dev.chunkzero.example.golf.Course
 import dev.chunkzero.example.runGameProcess
 import dev.chunkzero.example.ui.ResourcePack
+import dev.chunkzero.example.world.GameWorld
+import dev.chunkzero.example.world.keepAboveVoid
 import dev.chunkzero.runtime.CoroutineSession
 import dev.chunkzero.runtime.SessionProvider
 import dev.chunkzero.runtime.SessionScope
 import dev.chunkzero.runtime.SessionType
+import kotlinx.coroutines.future.await
 import net.kyori.adventure.text.Component
 import net.minestom.server.entity.Player
-import net.minestom.server.instance.LightingChunk
-import net.minestom.server.instance.block.Block
 
 @SessionType("default")
 class LobbySessions : SessionProvider {
@@ -17,14 +19,16 @@ class LobbySessions : SessionProvider {
 }
 
 class LobbySession : CoroutineSession() {
+    private lateinit var course: Course
+
     override suspend fun create(scope: SessionScope) {
-        scope.createInstance().apply {
-            setChunkSupplier(::LightingChunk)
-            setGenerator { it.modifier().fillHeight(0, 40, Block.GRASS_BLOCK) }
-        }
+        course = scope.component(Course::class.java)
+        scope.component(GameWorld::class.java).load(scope)
+        scope.keepAboveVoid { course.spawn }
     }
 
     override suspend fun join(player: Player) {
+        player.teleport(course.spawn).await()
         player.sendResourcePacks(ResourcePack.request())
         player.sendMessage(Component.text("Welcome to the clubhouse. Use /play to tee off."))
     }

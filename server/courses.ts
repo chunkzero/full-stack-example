@@ -2,7 +2,7 @@ import { query, v } from "#chunk";
 
 /** Par for each hole, by course id. */
 export const courses: Record<string, number[]> = {
-  oakmere: [2, 3, 3, 4, 3, 3, 4, 3, 5],
+  oakmere: [2, 3, 3, 4, 3, 3, 3, 3, 4],
 };
 
 const names: Record<string, string> = { oakmere: "Oakmere Links" };

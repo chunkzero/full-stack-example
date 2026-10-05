@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "points": [
+    {
+      "name": "tee_0",
+      "kind": "tee",
+      "position": {
+        "x": 29.5,
+        "y": 65.0,
+        "z": 36.5
+      },
+      "yaw": 180.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "0"
+      }
+    },
+    {
+      "name": "arrival",
+      "kind": "spawn",
+      "position": {
+        "x": 0.5,
+        "y": 65.0,
+        "z": 28.5
+      },
+      "yaw": 179.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {}
+    },
+    {
+      "name": "reception",
+      "kind": "npc",
+      "position": {
+        "x": -15.5,
+        "y": 67.0,
+        "z": -18.5
+      },
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "id": "profile"
+      }
+    },
+    {
+      "name": "pro_shop",
+      "kind": "npc",
+      "position": {
+        "x": 17.5,
+        "y": 66.0,
+        "z": -20.5
+      },
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "id": "shop"
+      }
+    },
+    {
+      "name": "course_record",
+      "kind": "leaderboard",
+      "position": {
+        "x": 13.5,
+        "y": 68.0,
+        "z": -5.5
+      },
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "board": "course_record"
+      }
+    },
+    {
+      "name": "holes_in_one",
+      "kind": "leaderboard",
+      "position": {
+        "x": 21.5,
+        "y": 68.0,
+        "z": -5.5
+      },
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "board": "holes_in_one"
+      }
+    },
+    {
+      "name": "coins",
+      "kind": "leaderboard",
+      "position": {
+        "x": 29.5,
+        "y": 68.0,
+        "z": -5.5
+      },
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "board": "coins"
+      }
+    },
+    {
+      "name": "caddie",
+      "kind": "npc",
+      "position": {
+        "x": 34.5,
+        "y": 65.0,
+        "z": 5.5
+      },
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "id": "caddie"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "name": "cup_0",
+      "kind": "cup",
+      "position": {
+        "x": 42,
+        "y": 64,
+        "z": 21
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "0"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "name": "hole_0",
+      "kind": "hole",
+      "min": {
+        "x": 24,
+        "y": 63,
+        "z": 13
+      },
+      "max": {
+        "x": 49,
+        "y": 69,
+        "z": 42
+      },
+      "tags": [],
+      "properties": {
+        "hole": "0",
+        "par": "2",
+        "name": "Practice Green"
+      }
+    },
+    {
+      "name": "golf_gate",
+      "kind": "portal",
+      "min": {
+        "x": 37,
+        "y": 65,
+        "z": -1
+      },
+      "max": {
+        "x": 41,
+        "y": 67,
+        "z": 1
+      },
+      "tags": [],
+      "properties": {
+        "destination": "golf"
+      }
+    }
+  ],
+  "paths": []
+}

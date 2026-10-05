@@ -1,0 +1,479 @@
+{
+  "version": 1,
+  "points": [
+    {
+      "name": "tee_1",
+      "kind": "tee",
+      "position": {
+        "x": -53.5,
+        "y": 68.0,
+        "z": 40.5
+      },
+      "yaw": 180.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "1"
+      }
+    },
+    {
+      "name": "tee_2",
+      "kind": "tee",
+      "position": {
+        "x": -49.5,
+        "y": 71.0,
+        "z": 1.5
+      },
+      "yaw": 173.6598,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "2"
+      }
+    },
+    {
+      "name": "tee_3",
+      "kind": "tee",
+      "position": {
+        "x": -18.5,
+        "y": 82.0,
+        "z": -23.5
+      },
+      "yaw": -90.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "3"
+      }
+    },
+    {
+      "name": "tee_4",
+      "kind": "tee",
+      "position": {
+        "x": 23.5,
+        "y": 68.0,
+        "z": -20.5
+      },
+      "yaw": -80.53768,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "4"
+      }
+    },
+    {
+      "name": "tee_5",
+      "kind": "tee",
+      "position": {
+        "x": 58.5,
+        "y": 71.0,
+        "z": 0.5
+      },
+      "yaw": -29.74488,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "5"
+      }
+    },
+    {
+      "name": "tee_6",
+      "kind": "tee",
+      "position": {
+        "x": 52.5,
+        "y": 67.0,
+        "z": 38.5
+      },
+      "yaw": 104.03625,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "6"
+      }
+    },
+    {
+      "name": "tee_7",
+      "kind": "tee",
+      "position": {
+        "x": 16.5,
+        "y": 67.0,
+        "z": 54.5
+      },
+      "yaw": 35.537678,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "7"
+      }
+    },
+    {
+      "name": "tee_8",
+      "kind": "tee",
+      "position": {
+        "x": -23.5,
+        "y": 64.0,
+        "z": 47.5
+      },
+      "yaw": 130.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "8"
+      }
+    },
+    {
+      "name": "tee_9",
+      "kind": "tee",
+      "position": {
+        "x": -11.5,
+        "y": 67.0,
+        "z": 26.5
+      },
+      "yaw": -156.8014,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "hole": "9"
+      }
+    },
+    {
+      "name": "arrival",
+      "kind": "spawn",
+      "position": {
+        "x": -46.5,
+        "y": 68.0,
+        "z": 49.5
+      },
+      "yaw": 170.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {}
+    },
+    {
+      "name": "course_records",
+      "kind": "leaderboard",
+      "position": {
+        "x": -29.5,
+        "y": 71.0,
+        "z": 58.5
+      },
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "tags": [],
+      "properties": {
+        "board": "course_record"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "name": "cup_1",
+      "kind": "cup",
+      "position": {
+        "x": -48,
+        "y": 65,
+        "z": 15
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "1"
+      }
+    },
+    {
+      "name": "cup_2",
+      "kind": "cup",
+      "position": {
+        "x": -30,
+        "y": 73,
+        "z": -22
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "2"
+      }
+    },
+    {
+      "name": "cup_3",
+      "kind": "cup",
+      "position": {
+        "x": 10,
+        "y": 67,
+        "z": -19
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "3"
+      }
+    },
+    {
+      "name": "cup_4",
+      "kind": "cup",
+      "position": {
+        "x": 46,
+        "y": 73,
+        "z": -13
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "4"
+      }
+    },
+    {
+      "name": "cup_5",
+      "kind": "cup",
+      "position": {
+        "x": 54,
+        "y": 69,
+        "z": 25
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "5"
+      }
+    },
+    {
+      "name": "cup_6",
+      "kind": "cup",
+      "position": {
+        "x": 29,
+        "y": 65,
+        "z": 49
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "6"
+      }
+    },
+    {
+      "name": "cup_7",
+      "kind": "cup",
+      "position": {
+        "x": -8,
+        "y": 63,
+        "z": 48
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "7"
+      }
+    },
+    {
+      "name": "cup_8",
+      "kind": "cup",
+      "position": {
+        "x": -23,
+        "y": 63,
+        "z": 23
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "8"
+      }
+    },
+    {
+      "name": "cup_9",
+      "kind": "cup",
+      "position": {
+        "x": 13,
+        "y": 66,
+        "z": 23
+      },
+      "state": "minecraft:air",
+      "tags": [],
+      "properties": {
+        "hole": "9"
+      }
+    }
+  ],
+  "regions": [
+    {
+      "name": "hole_1",
+      "kind": "hole",
+      "min": {
+        "x": -62,
+        "y": 64,
+        "z": 9
+      },
+      "max": {
+        "x": -44,
+        "y": 72,
+        "z": 48
+      },
+      "tags": [],
+      "properties": {
+        "hole": "1",
+        "par": "2",
+        "name": "Acorn Hollow"
+      }
+    },
+    {
+      "name": "hole_2",
+      "kind": "hole",
+      "min": {
+        "x": -60,
+        "y": 69,
+        "z": -31
+      },
+      "max": {
+        "x": -25,
+        "y": 78,
+        "z": 7
+      },
+      "tags": [],
+      "properties": {
+        "hole": "2",
+        "par": "3",
+        "name": "Foxglove Saddle"
+      }
+    },
+    {
+      "name": "hole_3",
+      "kind": "hole",
+      "min": {
+        "x": -23,
+        "y": 66,
+        "z": -33
+      },
+      "max": {
+        "x": 16,
+        "y": 86,
+        "z": -10
+      },
+      "tags": [],
+      "properties": {
+        "hole": "3",
+        "par": "3",
+        "name": "Heron Leap"
+      }
+    },
+    {
+      "name": "hole_4",
+      "kind": "hole",
+      "min": {
+        "x": 19,
+        "y": 66,
+        "z": -29
+      },
+      "max": {
+        "x": 54,
+        "y": 78,
+        "z": -5
+      },
+      "tags": [],
+      "properties": {
+        "hole": "4",
+        "par": "4",
+        "name": "Quarry Ascent"
+      }
+    },
+    {
+      "name": "hole_5",
+      "kind": "hole",
+      "min": {
+        "x": 46,
+        "y": 68,
+        "z": -4
+      },
+      "max": {
+        "x": 71,
+        "y": 75,
+        "z": 31
+      },
+      "tags": [],
+      "properties": {
+        "hole": "5",
+        "par": "3",
+        "name": "Kingfisher Tarn"
+      }
+    },
+    {
+      "name": "hole_6",
+      "kind": "hole",
+      "min": {
+        "x": 24,
+        "y": 64,
+        "z": 32
+      },
+      "max": {
+        "x": 58,
+        "y": 71,
+        "z": 55
+      },
+      "tags": [],
+      "properties": {
+        "hole": "6",
+        "par": "3",
+        "name": "Rootbank Ricochet"
+      }
+    },
+    {
+      "name": "hole_7",
+      "kind": "hole",
+      "min": {
+        "x": -14,
+        "y": 62,
+        "z": 41
+      },
+      "max": {
+        "x": 22,
+        "y": 71,
+        "z": 68
+      },
+      "tags": [],
+      "properties": {
+        "hole": "7",
+        "par": "3",
+        "name": "Badger Dunes"
+      }
+    },
+    {
+      "name": "hole_8",
+      "kind": "hole",
+      "min": {
+        "x": -43,
+        "y": 62,
+        "z": 16
+      },
+      "max": {
+        "x": -17,
+        "y": 68,
+        "z": 56
+      },
+      "tags": [],
+      "properties": {
+        "hole": "8",
+        "par": "3",
+        "name": "Otter Millpond"
+      }
+    },
+    {
+      "name": "hole_9",
+      "kind": "hole",
+      "min": {
+        "x": -16,
+        "y": 65,
+        "z": 6
+      },
+      "max": {
+        "x": 19,
+        "y": 72,
+        "z": 36
+      },
+      "tags": [],
+      "properties": {
+        "hole": "9",
+        "par": "4",
+        "name": "Abbey Ways"
+      }
+    }
+  ],
+  "paths": []
+}
