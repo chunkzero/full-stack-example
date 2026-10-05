@@ -1,68 +1,79 @@
 # Chunkzero full stack example
 
-A grass lobby and sandstone arenas with persistent player coins, based on Chunk's
-Kotlin example. Chunk runs gameplay and the TypeScript backend, RPP builds the
-resource pack, and Window generates a typed wallet UI whose earn button calls the
-same backend mutation as `/coin`.
+Mini golf on Chunk. Players meet in the Oakmere clubhouse, run `/play` and play nine
+holes of Oakmere Links against the course record's ghost. Coins and ball skins they earn,
+along with their best rounds, persist in a TypeScript backend.
+
+Every piece of the stack is used:
+
+- **Chunk** runs two Kotlin gameplay apps (`lobby` and `golf`) and the backend's
+  queries, mutations, live watches and migrations.
+- **World Builder** authored both worlds. They ship as Polar files with a `marks.json`
+  sidecar holding tees, cups, hole regions, portals, leaderboards and NPC spots.
+- **RPP** builds the resource pack.
+- **Window** generates typed Kotlin views for the play, shop, profile and scorecard
+  menus and the in-round HUD.
 
 ## Run
 
-Use mise 2026.10.0 or newer, then run `just setup`. `mise.toml` installs the
-pinned tools and reads RPP's release definition from `chunkzero/aqua-registry`.
-RPP supports Linux and macOS on x64/arm64, and Windows on x64. Mise selects the
-native archive automatically. Have `chunk` on `PATH`.
-
-The Window plugin resolves through `chunkzero/rpp-registry`; its matching JVM
-runtime resolves from `https://maven.chunkzero.com`.
+Use mise 2026.10.0 or newer, then run `just setup`. Until the Chunk, RPP and Window
+nightlies are pinned, build them from sibling checkouts (`../chunk`, `../rpp`,
+`../window`) with `just local-deps`, then put the printed `rpp` and `chunk` binaries
+on `PATH`.
 
 ```sh
 just dev
 ```
 
-Join `localhost:25565` with Minecraft Java Edition 26.2 and accept the required
-resource pack. `/wallet` opens the Window UI; click `+1` to earn a persistent coin.
-`/coin`, `/travel lobby|arena|large`, `/hello <message>`, and `/population` in the
-lobby exercise Chunk's backend and session routing. Coins survive session moves
-and restarts. `just dev --offline-logins` allows offline development connections.
+Join `localhost:25565` with Minecraft Java Edition 26.2 and accept the resource pack.
+`just dev --offline-logins` allows offline development connections.
 
-The pack endpoint runs on `127.0.0.1:8080` and stops with the dev command. Rebuild
-UI assets with `just pack` before restarting after an authoring change. Set
-`PACK_URL` to a player-accessible URL when hosting the built pack elsewhere.
+## Play
 
-## Work on it
+- **Clubhouse.** The hotbar holds Play, Pro Shop and Profile.
+  - The leaderboards for course record, holes in one and coins update live.
+  - Walk into the portal or run `/play` to tee off.
+  - The practice green lets you try the putter between rounds.
+- **Putting.** Right-click to start charging, then right-click again to shoot at the
+  current power. The aim guide follows where you look.
+  - Going out of bounds adds a stroke and returns the ball.
+  - A hole ends at 8 strokes. After 2 minutes it scores par or your strokes so far,
+    whichever is higher, plus 2 (capped at 8).
+- **Rounds.** Finishing earns coins and XP, with bonuses for aces and under-par holes, and can
+  set a personal best or the course record. The record holder's shots replay as a
+  ghost for everyone after them. `/scorecard` shows the card mid-round and `/lobby`
+  leaves.
 
-- `pack/src/window/wallet.ts`: UI definition.
-- `pack/rpp.config.ts`: pack settings and Kotlin generation.
-- `shared/src/main/kotlin/dev/chunkzero/example/ui/`: handwritten view and pack request.
-- `server/players.ts`: typed player queries and mutations.
-- `apps/`: lobby and arena declarations and session providers.
-- `gradle/libs.versions.toml` and `pack/rpp.json`: pinned JVM/plugin versions.
+## Layout
 
-`just build` includes the resource pack under `assets/` in the Chunk release. `just check` checks
-formatting, linting and TypeScript types. JVM tests use `./gradlew :shared:test`.
-Commit `pack/rpp.lock` whenever updating plugin dependencies; keep the Window
-plugin and runtime versions aligned. Generated SDKs, UI bindings and local state
-are ignored.
+- `apps/lobby`: clubhouse session, menus, live leaderboards, portal and practice green.
+- `apps/golf`: course sessions, rounds, scoring and result recording.
+- `shared/`:
+  - `golf/`: deterministic ball physics, the putter and ghost replays.
+  - `world/`: Polar and marks loading.
+  - `ui/`: handwritten Window views.
+- `server/`: backend schema, players, shop, rounds, courses and leaderboards.
+- `pack/src/window/`: Window UI definitions.
+- `worlds/mark-kinds.json`: the mark kinds World Builder uses for these worlds.
+
+`just check` runs formatting, linting, codegen, TypeScript and pack checks. JVM tests
+run per module, such as `./gradlew :shared:test :apps:golf:test :apps:lobby:test`.
+`just build` builds the pack and a Chunk release. Generated SDKs, Window bindings,
+`.chunk` state and build output are not committed.
+
+## Editing worlds
+
+Open a world in [World Builder](https://github.com/chunkzero/minestom-world-builder)
+with `worlds/mark-kinds.json` as its mark kinds. Export it, then replace `world.polar`
+and `marks.json` under `apps/<app>/src/main/resources/worlds/<name>/`. If hole pars
+change, update `server/courses.ts` to match, since the backend scores rounds against
+those pars.
 
 ## Nightlies
 
-Daily workflows publish immutable prereleases such as
-`0.1.0-nightly.20261002.g0123456789ab`, with checksums and the full source commit.
-Unchanged sources skip the scheduled release; manual dispatch can publish earlier.
-
-- RPP CLI: GitHub release assets, installed by mise through `chunkzero/aqua-registry`.
-- Window plugin: GitHub release archive, registered through a PR in `chunkzero/rpp-registry`.
-- Window JVM libraries: the same version published to `https://maven.chunkzero.com`.
-
-RPP follows the latest nightly through `aqua:chunkzero/rpp-nightly`; `mise.lock`
-pins the selected build and checksum. Update it with
-`mise lock --bump aqua:chunkzero/rpp-nightly`, then run
-`mise install` and commit `mise.lock`. The per-tool minimum release age allows
-fresh nightlies without requiring a global mise setting. Pin a Window
-nightly with `rpp -C pack add window@<version>` after its registry PR merges, then
-set the same Window version in `gradle/libs.versions.toml`. Commit the version
-changes, `mise.lock`, and `pack/rpp.lock` together. RPP and Window can use different
-nightly dates; the Window plugin and JVM runtime must match exactly.
-
-Only the latest 30 nightlies are retained. Older pins cannot be freshly installed
-after their releases are pruned.
+`mise.toml` follows RPP's nightly through `aqua:chunkzero/rpp-nightly`, and `mise.lock`
+pins the selected build. Update it with `mise lock --bump aqua:chunkzero/rpp-nightly`
+and `mise install`. Pin a Window nightly with `rpp -C pack add window@<version>` and set
+the same version in `gradle/libs.versions.toml`, because the Window plugin and JVM
+runtime must match exactly. Commit `mise.lock`, `pack/rpp.lock` and the version changes
+together. Only the latest 30 nightlies are retained.
