@@ -5,7 +5,7 @@ export default defineConfig({
   pack: {
     name: "full-stack-example",
     description: "Chunkzero full stack example",
-    packFormat: 88,
+    format: 88,
   },
   build: { source: "src", output: "dist" },
   plugins: [
@@ -13,8 +13,8 @@ export default defineConfig({
       hudShaders: true,
       namespace: "example",
       kotlin: {
-        package: "dev.chunkzero.example.ui.generated",
-        output: "../shared/src/main/kotlin/dev/chunkzero/example/ui/generated",
+        package: "com.chunkzero.example.ui.generated",
+        output: "../shared/src/main/kotlin/com/chunkzero/example/ui/generated",
       },
     }),
   ],

@@ -1,5 +1,5 @@
 plugins {
-    id("dev.chunkzero.chunk.kotlin")
+    id("com.chunkzero.chunk.kotlin")
 }
 
 java { toolchain.languageVersion = JavaLanguageVersion.of(25) }
@@ -17,4 +17,4 @@ dependencies {
 
 tasks.test { useJUnitPlatform() }
 
-application { mainClass = "dev.chunkzero.example.golf.GolfSessionsKt" }
+application { mainClass = "com.chunkzero.example.golf.GolfSessionsKt" }

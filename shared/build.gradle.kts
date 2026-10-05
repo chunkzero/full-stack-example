@@ -1,7 +1,7 @@
 import java.security.MessageDigest
 
 plugins {
-    id("dev.chunkzero.chunk.kotlin")
+    id("com.chunkzero.chunk.kotlin")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
