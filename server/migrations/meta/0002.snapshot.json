@@ -1,0 +1,247 @@
+{
+  "bests": {
+    "fields": {
+      "course": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      },
+      "total": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_course": ["course", "total"],
+      "by_player_course": ["player", "course"]
+    }
+  },
+  "golfers": {
+    "fields": {
+      "ball": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "coins": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "holesInOne": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "name": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      },
+      "rankCoins": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "rankHolesInOne": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "rounds": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "xp": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_coins": ["rankCoins"],
+      "by_holes_in_one": ["rankHolesInOne"],
+      "by_player": ["player"]
+    }
+  },
+  "owned": {
+    "fields": {
+      "item": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_player": ["player", "item"]
+    }
+  },
+  "profiles": {
+    "fields": {
+      "coins": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      },
+      "visits": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_player": ["player"]
+    }
+  },
+  "records": {
+    "fields": {
+      "course": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      },
+      "shots": {
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "fields": {
+                "power": {
+                  "schema": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "yaw": {
+                  "schema": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            }
+          }
+        },
+        "optional": false
+      },
+      "total": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_course": ["course"]
+    }
+  },
+  "results": {
+    "fields": {
+      "coins": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "course": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "courseRecord": {
+        "schema": {
+          "type": "boolean"
+        },
+        "optional": false
+      },
+      "par": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "personalBest": {
+        "schema": {
+          "type": "boolean"
+        },
+        "optional": false
+      },
+      "player": {
+        "schema": {
+          "type": "player"
+        },
+        "optional": false
+      },
+      "round": {
+        "schema": {
+          "type": "string"
+        },
+        "optional": false
+      },
+      "total": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      },
+      "xp": {
+        "schema": {
+          "type": "integer"
+        },
+        "optional": false
+      }
+    },
+    "indexes": {
+      "by_round": ["round", "player"]
+    }
+  }
+}
