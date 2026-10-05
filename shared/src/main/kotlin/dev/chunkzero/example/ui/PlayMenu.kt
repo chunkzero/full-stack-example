@@ -28,14 +28,18 @@ class PlayMenu(
     var personalBest: Int? by state(initialPersonalBest)
     var playerCount: Int by state(initialPlayerCount)
 
-    override fun course(): Component = text(course.name.uppercase(), UiColors.GOLD)
+    override fun course(): Component =
+        text(fit(course.name.uppercase(), COURSE_WIDTH, UiFont.VANILLA, bold = true), UiColors.GOLD)
 
-    override fun courseInfo(): Component = text("${course.holes} holes  ·  Par ${course.par}")
+    override fun courseInfo(): Component = text("${course.holes} holes  ·  Par ${course.par}", UiColors.MUTED)
 
     override fun record(): Component =
         record?.let {
             val suffix = " - ${it.strokes}"
-            text(fit(it.holder, RECORD_WIDTH - textWidth(suffix)) + suffix, UiColors.GOLD)
+            text(
+                fit(it.holder, STAT_WIDTH - UiFont.SMALL_CAPS.width(suffix), UiFont.SMALL_CAPS) + suffix,
+                UiColors.GOLD,
+            )
         }
             ?: text("No record yet", UiColors.MUTED)
 
@@ -50,6 +54,7 @@ class PlayMenu(
     override fun onProfile(click: Click) = onProfile.invoke()
 
     private companion object {
-        const val RECORD_WIDTH = 112
+        const val COURSE_WIDTH = 152
+        const val STAT_WIDTH = 100
     }
 }

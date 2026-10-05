@@ -23,9 +23,10 @@ class ProfileMenu(
 ) : ProfileView() {
     var card: ProfileCard by state(initialCard)
 
-    override fun name(): Component = text(fit(card.name, 132, bold = true))
+    override fun name(): Component = text(fit(card.name, LINE_WIDTH, UiFont.VANILLA, bold = true))
 
-    override fun ballName(): Component = text(fit("Ball: ${card.ballName}", 132), UiColors.MUTED)
+    override fun ballName(): Component =
+        text(fit("Ball: ${card.ballName}", LINE_WIDTH, UiFont.SMALL_CAPS), UiColors.MUTED)
 
     override fun level(): Component = text("Level ${card.level}", UiColors.GOLD)
 
@@ -47,6 +48,7 @@ class ProfileMenu(
     }
 
     private companion object {
+        const val LINE_WIDTH = 136
         const val XP_SEGMENTS = 16
     }
 }

@@ -145,6 +145,25 @@ class BallSimulationTest {
     }
 
     @Test
+    fun `a ball climbs slab then full block half steps heading toward negative Z`() {
+        val steps =
+            Grid().apply {
+                fill(-10..10, -1, -40..10)
+                fill(-10..10, 0, -8..-5, boxes = listOf(Box.BOTTOM_SLAB))
+                fill(-10..10, 0, -40..-9)
+            }
+        val wideRegion = BlockRegion(BlockPos(-10, -5, -40), BlockPos(10, 10, 10))
+        for (power in listOf(0.8, 1.0)) {
+            val ball = BallSimulation(steps, farCup, wideRegion, Vec(0.5, BallPhysics.RADIUS, 0.5))
+            ball.shoot(Shot(180f, power))
+            var event: BallEvent? = null
+            while (event == null) event = ball.tick()
+            assertTrue(event.position.z() < -9, "power $power stopped at ${event.position}")
+            assertEquals(1 + BallPhysics.RADIUS, event.position.y(), 1e-2)
+        }
+    }
+
+    @Test
     fun `a slow putt sinks while a fast one skips over the cup`() {
         val cup = BlockPos(0, -1, 3)
         val terrain = green().apply { clear(0, -1, 3) }

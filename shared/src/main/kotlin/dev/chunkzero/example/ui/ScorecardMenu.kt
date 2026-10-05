@@ -3,7 +3,6 @@ package dev.chunkzero.example.ui
 import dev.oglass.window.WindowScope
 import dev.oglass.window.WindowView
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.TextDecoration
 
 data class ScorecardRow(
     val name: String,
@@ -40,8 +39,7 @@ class ScorecardMenu(
 
     private fun nameOf(row: ScorecardRow?): Component {
         row ?: return text("")
-        val name = text(fit(row.name, NAME_WIDTH), if (row.isViewer) UiColors.GOLD else UiColors.WHITE)
-        return if (row.isViewer) name.decorate(TextDecoration.UNDERLINED) else name
+        return text(fit(row.name, NAME_WIDTH, UiFont.SMALL_CAPS), if (row.isViewer) UiColors.GOLD else UiColors.WHITE)
     }
 
     private fun strokesOf(
@@ -76,6 +74,6 @@ class ScorecardMenu(
     companion object {
         const val MAX_PLAYERS = 8
         private const val HOLES = 9
-        private const val NAME_WIDTH = 38
+        private const val NAME_WIDTH = 44
     }
 }
