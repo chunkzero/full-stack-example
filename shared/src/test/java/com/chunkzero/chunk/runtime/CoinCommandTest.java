@@ -1,4 +1,4 @@
-package dev.chunkzero.runtime;
+package com.chunkzero.chunk.runtime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,12 +12,11 @@ import chunk.sync.v1.CoreOuterClass.Update;
 import chunk.sync.v1.Jvm.JvmDelivery;
 import chunk.sync.v1.Jvm.JvmSession;
 
+import com.chunkzero.chunk.backend.api.SessionId;
+import com.chunkzero.chunk.backend.client.BackendSession;
+import com.chunkzero.chunk.backend.client.SessionIdentity;
+import com.chunkzero.example.ExampleSessions;
 import com.google.protobuf.ByteString;
-
-import dev.chunkzero.backend.api.SessionId;
-import dev.chunkzero.backend.client.BackendSession;
-import dev.chunkzero.backend.client.SessionIdentity;
-import dev.chunkzero.example.ExampleSessions;
 
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.ServerBuilder;
