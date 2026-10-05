@@ -1,1 +1,5 @@
-{ "dependencies": { "window": "path:../../window/plugin" } }
+{
+  "dependencies": {
+    "window": "0.1.0-nightly.20261005231514.gade26370eaef"
+  }
+}

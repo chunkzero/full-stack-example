@@ -16,10 +16,12 @@ Every piece of the stack is used:
 
 ## Run
 
-Use mise 2026.10.0 or newer, then run `just setup`. Until the Chunk, RPP and Window
-nightlies are pinned, build them from sibling checkouts (`../chunk`, `../rpp`,
-`../window`) with `just local-deps`, then put the printed `rpp` and `chunk` binaries
-on `PATH`.
+Use mise 2026.10.0 or newer, then run `just setup`. It installs the pinned tools,
+including the Chunk and RPP nightlies through the
+[`mise-chunkzero`](https://github.com/chunkzero/mise-chunkzero) plugin, on Linux and
+macOS (x64/arm64) and Windows (x64). Chunk's Gradle plugin and libraries, Minestom and
+the Window runtime resolve from `https://maven.chunkzero.com/nightlies`, and the Window
+RPP plugin resolves through `chunkzero/rpp-registry`.
 
 ```sh
 just dev
@@ -71,9 +73,13 @@ those pars.
 
 ## Nightlies
 
-`mise.toml` follows RPP's nightly through `aqua:chunkzero/rpp-nightly`, and `mise.lock`
-pins the selected build. Update it with `mise lock --bump aqua:chunkzero/rpp-nightly`
-and `mise install`. Pin a Window nightly with `rpp -C pack add window@<version>` and set
-the same version in `gradle/libs.versions.toml`, because the Window plugin and JVM
-runtime must match exactly. Commit `mise.lock`, `pack/rpp.lock` and the version changes
-together. Only the latest 30 nightlies are retained.
+`mise.lock` pins the Chunk and RPP CLI nightlies. Update them with
+`mise upgrade chunkzero:chunk-nightly chunkzero:rpp-nightly`.
+
+- **Chunk:** set the CLI's version on the settings plugin in `settings.gradle.kts`.
+- **Window:** pin a nightly with `rpp -C pack add window@<version>`, then set the same
+  `window` version in `gradle/libs.versions.toml`. The plugin and JVM runtime must
+  match exactly.
+
+Commit `mise.lock`, `pack/rpp.lock` and the version changes together. Published
+nightlies are immutable and never deleted.
