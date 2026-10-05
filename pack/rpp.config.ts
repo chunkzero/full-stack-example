@@ -10,6 +10,7 @@ export default defineConfig({
   build: { source: "src", output: "dist" },
   plugins: [
     window({
+      hudShaders: true,
       namespace: "example",
       kotlin: {
         package: "dev.chunkzero.example.ui.generated",
