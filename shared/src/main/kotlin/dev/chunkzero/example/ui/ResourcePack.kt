@@ -1,4 +1,4 @@
-package com.chunkzero.example.ui
+package dev.chunkzero.example.ui
 
 import net.kyori.adventure.resource.ResourcePackInfo
 import net.kyori.adventure.resource.ResourcePackRequest

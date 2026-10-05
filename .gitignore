@@ -6,6 +6,6 @@
 **/build/
 **/dist/
 node_modules/
-shared/src/main/kotlin/com/chunkzero/example/ui/generated/
+shared/src/main/kotlin/dev/chunkzero/example/ui/generated/
 
 /assets/*.zip

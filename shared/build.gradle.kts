@@ -1,7 +1,7 @@
 import java.security.MessageDigest
 
 plugins {
-    id("com.chunkzero.chunk.kotlin")
+    id("dev.chunkzero.chunk.kotlin")
 }
 
 java { toolchain.languageVersion = JavaLanguageVersion.of(25) }
@@ -9,13 +9,7 @@ kotlin { compilerOptions { allWarningsAsErrors = true } }
 
 dependencies {
     implementation(libs.window.runtime)
-    testImplementation("com.chunkzero.chunk:proto:${libs.versions.chunk.get()}")
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testRuntimeOnly(libs.junit.platform.launcher)
 }
-
-tasks.test { useJUnitPlatform() }
 
 val prepareResourcePack =
     tasks.register("prepareResourcePack") {

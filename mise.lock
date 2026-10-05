@@ -2,15 +2,38 @@
 
 lockfile_version = 3
 
-[[tools."chunkzero:chunk-nightly"]]
-version = "0.1.0-nightly.20261005025602.g47c5d08bda27"
-backend = "chunkzero:chunk-nightly"
+[[tools."aqua:chunkzero/rpp-nightly"]]
+version = "0.1.0-nightly.20261002.ge7fe09d0aa17"
+backend = "aqua:chunkzero/rpp-nightly"
 specifiers = ["latest"]
 
-[[tools."chunkzero:rpp-nightly"]]
-version = "0.1.0-nightly.20261005044045.g335e6702930a"
-backend = "chunkzero:rpp-nightly"
-specifiers = ["latest"]
+[tools."aqua:chunkzero/rpp-nightly".options]
+"vars.prerelease" = "true"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.linux-arm64"]
+checksum = "sha256:9e91f63b224f6124ca19593924febba339fe22b84b6e1e64a907473cfe5674fb"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873591"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.linux-x64"]
+checksum = "sha256:fd19c0f42538ee5e0e75d4d3dbd3e914a1cd507120826ba47176f3ca088f6e45"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873605"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.macos-arm64"]
+checksum = "sha256:9dd654ce1fd10a801c2f45e30e0f39be29fe1cf76758c5b31e1f16a861ecd14e"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873572"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.macos-x64"]
+checksum = "sha256:f84b6c6f1ab956138ecb99d815bee77f7f9a610d321f5684a4ec23e1ff5dad71"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-darwin-x64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873575"
+
+[tools."aqua:chunkzero/rpp-nightly"."platforms.windows-x64"]
+checksum = "sha256:ccfd0164a3e56a5c8b3bbf6c83df1f78301ceb80ed0d9ceacd3d45e01f231c3c"
+url = "https://github.com/chunkzero/rpp/releases/download/v0.1.0-nightly.20261002.ge7fe09d0aa17/rpp-0.1.0-nightly.20261002.ge7fe09d0aa17-windows-x64.tar.gz"
+url_api = "https://api.github.com/repos/chunkzero/rpp/releases/assets/604873624"
 
 [[tools.java]]
 version = "temurin-25.0.4+7.0.LTS"
