@@ -8,12 +8,13 @@ same backend mutation as `/coin`.
 ## Run
 
 Use mise 2026.10.0 or newer, then run `just setup`. `mise.toml` installs the
-pinned tools and reads RPP's release definition from `chunkzero/aqua-registry`.
-RPP supports Linux and macOS on x64/arm64, and Windows on x64. Mise selects the
-native archive automatically. Have `chunk` on `PATH`.
+pinned tools, including the `chunk` and `rpp` nightlies through the
+[`chunkzero` mise plugin](https://github.com/chunkzero/mise-chunkzero). Both
+support Linux and macOS on x64/arm64, and Windows on x64.
 
-The Window plugin resolves through `chunkzero/rpp-registry`; its matching JVM
-runtime resolves from `https://maven.chunkzero.com`.
+The Window plugin resolves through `chunkzero/rpp-registry`. Chunk's Gradle
+plugins and libraries, Multistom (Chunk's Minestom build) and the Window runtime
+resolve from `https://maven.chunkzero.com/nightlies`.
 
 ```sh
 just dev
@@ -33,10 +34,10 @@ UI assets with `just pack` before restarting after an authoring change. Set
 
 - `pack/src/window/wallet.ts`: UI definition.
 - `pack/rpp.config.ts`: pack settings and Kotlin generation.
-- `shared/src/main/kotlin/dev/chunkzero/example/ui/`: handwritten view and pack request.
+- `shared/src/main/kotlin/com/chunkzero/example/ui/`: handwritten view and pack request.
 - `server/players.ts`: typed player queries and mutations.
 - `apps/`: lobby and arena declarations and session providers.
-- `gradle/libs.versions.toml` and `pack/rpp.json`: pinned JVM/plugin versions.
+- `settings.gradle.kts`, `gradle/libs.versions.toml` and `pack/rpp.json`: pinned JVM/plugin versions.
 
 `just build` includes the resource pack under `assets/` in the Chunk release. `just check` checks
 formatting, linting and TypeScript types. JVM tests use `./gradlew :shared:test`.
@@ -46,23 +47,22 @@ are ignored.
 
 ## Nightlies
 
-Daily workflows publish immutable prereleases such as
-`0.1.0-nightly.20261002.g0123456789ab`, with checksums and the full source commit.
-Unchanged sources skip the scheduled release; manual dispatch can publish earlier.
+Chunkzero projects publish immutable versions: stable `X.Y.Z`, prereleases such as
+`X.Y.Z-beta.N`, and nightlies such as
+`0.1.0-nightly.20261005025602.g47c5d08bda27` (UTC commit time and commit). Stable
+JVM artifacts are served from `https://maven.chunkzero.com`, nightlies from
+`https://maven.chunkzero.com/nightlies`. This example pins nightlies.
 
-- RPP CLI: GitHub release assets, installed by mise through `chunkzero/aqua-registry`.
-- Window plugin: GitHub release archive, registered through a PR in `chunkzero/rpp-registry`.
-- Window JVM libraries: the same version published to `https://maven.chunkzero.com`.
+- Chunk and RPP CLIs: GitHub release assets listed in `chunkzero/mise-registry`,
+  installed as `chunkzero:chunk-nightly` and `chunkzero:rpp-nightly`.
+- Window plugin: GitHub release archive, registered in `chunkzero/rpp-registry`.
+- Chunk Gradle plugins and libraries, and the Window runtime: the same versions on
+  the nightly Maven repository.
 
-RPP follows the latest nightly through `aqua:chunkzero/rpp-nightly`; `mise.lock`
-pins the selected build and checksum. Update it with
-`mise lock --bump aqua:chunkzero/rpp-nightly`, then run
-`mise install` and commit `mise.lock`. The per-tool minimum release age allows
-fresh nightlies without requiring a global mise setting. Pin a Window
-nightly with `rpp -C pack add window@<version>` after its registry PR merges, then
-set the same Window version in `gradle/libs.versions.toml`. Commit the version
-changes, `mise.lock`, and `pack/rpp.lock` together. RPP and Window can use different
-nightly dates; the Window plugin and JVM runtime must match exactly.
-
-Only the latest 30 nightlies are retained. Older pins cannot be freshly installed
-after their releases are pruned.
+`mise.lock` pins the selected CLI builds. Update them with
+`mise upgrade chunkzero:chunk-nightly chunkzero:rpp-nightly` and commit `mise.lock`.
+The Chunk CLI, the `com.chunkzero.chunk.settings` plugin version in
+`settings.gradle.kts`, and `chunk` in `gradle/libs.versions.toml` must match. Pin
+a Window nightly with `rpp -C pack add window@<version>`, then set the same
+version for `window` in `gradle/libs.versions.toml`. Commit the version changes,
+`mise.lock`, and `pack/rpp.lock` together.

@@ -1,1 +1,5 @@
-{ "dependencies": { "window": "0.1.0-nightly.20261002.g67305fc8e4c3" } }
+{
+  "dependencies": {
+    "window": "0.1.0-nightly.20261005123300.gcc42b4bff194"
+  }
+}

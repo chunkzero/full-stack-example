@@ -1,7 +1,7 @@
-package dev.chunkzero.example.ui
+package com.chunkzero.example.ui
 
-import dev.chunkzero.example.ui.generated.WalletView
-import dev.oglass.window.Click
+import com.chunkzero.example.ui.generated.WalletView
+import com.chunkzero.window.Click
 import net.kyori.adventure.text.Component
 
 class Wallet(
