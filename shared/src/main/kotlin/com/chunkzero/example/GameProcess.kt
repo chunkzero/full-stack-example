@@ -1,6 +1,6 @@
 package com.chunkzero.example
 
-import com.chunkzero.chunk.runtime.ChunkMinestom
+import com.chunkzero.chunk.multistom.ChunkMinestom
 import com.chunkzero.chunk.runtime.ChunkProcess
 import net.minestom.server.ServerProcess
 

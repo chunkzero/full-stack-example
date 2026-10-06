@@ -1,6 +1,6 @@
 package com.chunkzero.example.lobby
 
-import com.chunkzero.chunk.runtime.SessionScope
+import com.chunkzero.chunk.multistom.SessionScope
 import com.chunkzero.example.golf.Npc
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor

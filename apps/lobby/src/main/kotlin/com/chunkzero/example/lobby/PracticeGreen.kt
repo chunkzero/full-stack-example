@@ -1,6 +1,6 @@
 package com.chunkzero.example.lobby
 
-import com.chunkzero.chunk.runtime.SessionScope
+import com.chunkzero.chunk.multistom.SessionScope
 import com.chunkzero.example.golf.GolfBall
 import com.chunkzero.example.golf.Hole
 import com.chunkzero.example.golf.InstanceTerrain

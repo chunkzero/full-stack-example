@@ -1,8 +1,12 @@
 package com.chunkzero.example.ui
 
+import com.chunkzero.example.ui.generated.WindowDefinitions
 import com.chunkzero.window.WindowScope
 import com.chunkzero.window.WindowView
+import com.chunkzero.window.multistom.MultistomHost
 import net.kyori.adventure.text.Component
+import net.minestom.server.entity.Player
+import net.minestom.server.item.ItemStack
 
 data class ScorecardRow(
     val name: String,
@@ -12,14 +16,16 @@ data class ScorecardRow(
 
 /** Up to [MAX_PLAYERS] rows over [pars].size holes; strokes are null for holes not yet played. */
 class ScorecardMenu(
+    player: Player,
     private val course: String,
     private val pars: List<Int>,
     initialRows: List<ScorecardRow>,
     private val onBack: () -> Unit,
-) : WindowView("scorecard") {
+    private val onClosed: (ScorecardMenu) -> Unit,
+) : WindowView<ItemStack>(WindowDefinitions.scorecard, MultistomHost.of(player)) {
     var rows: List<ScorecardRow> by state(initialRows)
 
-    override fun WindowScope.bind() {
+    override fun WindowScope<ItemStack>.bind() {
         slot("course") { text(course.uppercase(), UiColors.GOLD) }
         slot("par_total") { text(pars.take(HOLES).sum().toString(), UiColors.GOLD) }
         slot("par_score") { text("") }
@@ -36,6 +42,8 @@ class ScorecardMenu(
         }
         button("back") { onBack() }
     }
+
+    override fun onClose() = onClosed(this)
 
     private fun nameOf(row: ScorecardRow?): Component {
         row ?: return text("")

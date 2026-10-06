@@ -3,6 +3,7 @@ package com.chunkzero.example.ui
 import com.chunkzero.example.ui.generated.PlayView
 import com.chunkzero.window.Click
 import net.kyori.adventure.text.Component
+import net.minestom.server.entity.Player
 
 data class CourseSummary(
     val name: String,
@@ -16,6 +17,7 @@ data class CourseRecord(
 )
 
 class PlayMenu(
+    player: Player,
     private val course: CourseSummary,
     initialRecord: CourseRecord?,
     initialPersonalBest: Int?,
@@ -23,7 +25,7 @@ class PlayMenu(
     private val onTeeOff: () -> Unit,
     private val onShop: () -> Unit,
     private val onProfile: () -> Unit,
-) : PlayView() {
+) : PlayView(player) {
     var record: CourseRecord? by state(initialRecord)
     var personalBest: Int? by state(initialPersonalBest)
     var playerCount: Int by state(initialPlayerCount)

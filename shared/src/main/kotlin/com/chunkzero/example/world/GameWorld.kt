@@ -1,6 +1,6 @@
 package com.chunkzero.example.world
 
-import com.chunkzero.chunk.runtime.SessionScope
+import com.chunkzero.chunk.multistom.SessionScope
 import kotlinx.coroutines.future.await
 import net.hollowcube.polar.PolarReader
 import net.hollowcube.polar.PolarWorld

@@ -1,7 +1,7 @@
 package com.chunkzero.example.lobby
 
-import com.chunkzero.chunk.runtime.SessionScope
-import com.chunkzero.chunk.runtime.coroutines
+import com.chunkzero.chunk.multistom.SessionScope
+import com.chunkzero.chunk.multistom.coroutines
 import com.chunkzero.example.generated.BackendTypes.Shared.Courses.CourseArgs
 import com.chunkzero.example.generated.BackendTypes.Shared.Players.ProfileResult
 import com.chunkzero.example.generated.BackendTypes.Shared.Rounds.CourseRecordArgs
@@ -19,7 +19,6 @@ import com.chunkzero.example.ui.ProfileCard
 import com.chunkzero.example.ui.ProfileMenu
 import com.chunkzero.example.ui.ShopMenu
 import com.chunkzero.window.WindowView
-import com.chunkzero.window.Windows
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory
  */
 class Menus(
     private val scope: SessionScope,
-    private val windows: Windows,
     private val backend: CoroutineBackendClient,
     private val catalog: Catalog,
     private val visitors: Map<Player, Visitor>,
@@ -68,6 +66,7 @@ class Menus(
                 visitor.backend.shared.rounds
                     .personalBest(PersonalBestArgs(OAKMERE))
             PlayMenu(
+                visitor.player,
                 course = course(),
                 initialRecord = record,
                 initialPersonalBest = best?.toInt(),
@@ -81,13 +80,17 @@ class Menus(
     fun openShop(visitor: Visitor) =
         load(visitor) {
             val profile = currentProfile(visitor)
-            ShopMenu(ballSkins(catalog.items(), profile), profile.coins().toInt()) { onSkin(visitor, it) }
+            ShopMenu(
+                visitor.player,
+                ballSkins(catalog.items(), profile),
+                profile.coins().toInt(),
+            ) { onSkin(visitor, it) }
         }
 
     fun openProfile(visitor: Visitor) =
         load(visitor) {
             val profile = currentProfile(visitor)
-            ProfileMenu(card(profile, catalog.items().firstOrNull { it.id() == profile.ball() }))
+            ProfileMenu(visitor.player, card(profile, catalog.items().firstOrNull { it.id() == profile.ball() }))
         }
 
     /** The watched profile, or a one-off query until the watch delivers its first value. */
@@ -130,7 +133,7 @@ class Menus(
     /** Builds a menu from backend data and opens it, unless the player left or is already waiting on one. */
     private fun load(
         visitor: Visitor,
-        build: suspend () -> WindowView,
+        build: suspend () -> WindowView<*>,
     ) {
         if (visitor.busy) return
         visitor.busy = true
@@ -139,7 +142,7 @@ class Menus(
                 val view = build()
                 if (visitors[visitor.player] === visitor) {
                     visitor.window?.close()
-                    visitor.window = windows.open(visitor.player, view)
+                    visitor.window = view.open()
                 }
             } catch (error: CancellationException) {
                 throw error

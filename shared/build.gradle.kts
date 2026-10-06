@@ -1,15 +1,20 @@
 import java.security.MessageDigest
 
 plugins {
-    id("com.chunkzero.chunk.kotlin")
+    id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.chunkzero.chunk")
 }
 
-java { toolchain.languageVersion = JavaLanguageVersion.of(25) }
-kotlin { compilerOptions { allWarningsAsErrors = true } }
+kotlin {
+    jvmToolchain(25)
+    compilerOptions { allWarningsAsErrors = true }
+}
 
 dependencies {
-    implementation(libs.window.runtime)
+    api(libs.chunk.multistom.kotlin)
+    api(libs.window.runtime)
+    api(libs.window.multistom)
     implementation(libs.polar)
     implementation(libs.slf4j.api)
     implementation(libs.kotlinx.serialization.json)

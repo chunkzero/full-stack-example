@@ -3,7 +3,7 @@
 lockfile_version = 3
 
 [[tools."chunkzero:chunk-nightly"]]
-version = "0.1.0-nightly.20261005131602.g140d8e740a39"
+version = "0.1.0-nightly.20261006035928.gb1df764164b0"
 backend = "chunkzero:chunk-nightly"
 specifiers = ["latest"]
 

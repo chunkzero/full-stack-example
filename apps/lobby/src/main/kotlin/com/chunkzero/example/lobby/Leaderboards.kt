@@ -1,7 +1,7 @@
 package com.chunkzero.example.lobby
 
-import com.chunkzero.chunk.runtime.SessionScope
-import com.chunkzero.chunk.runtime.coroutines
+import com.chunkzero.chunk.multistom.SessionScope
+import com.chunkzero.chunk.multistom.coroutines
 import com.chunkzero.example.generated.BackendTypes.Shared.Leaderboards.LeaderboardArgs
 import com.chunkzero.example.generated.BackendTypes.Shared.Leaderboards.LeaderboardArgs.Board
 import com.chunkzero.example.generated.BackendTypes.Shared.Leaderboards.LeaderboardResultItem

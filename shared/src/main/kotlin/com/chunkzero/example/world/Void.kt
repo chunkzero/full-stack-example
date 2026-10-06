@@ -1,6 +1,6 @@
 package com.chunkzero.example.world
 
-import com.chunkzero.chunk.runtime.SessionScope
+import com.chunkzero.chunk.multistom.SessionScope
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.event.player.PlayerMoveEvent
 

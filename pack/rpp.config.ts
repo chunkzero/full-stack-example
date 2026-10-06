@@ -13,6 +13,7 @@ export default defineConfig({
       hudShaders: true,
       namespace: "example",
       kotlin: {
+        target: "multistom",
         package: "com.chunkzero.example.ui.generated",
         output: "../shared/src/main/kotlin/com/chunkzero/example/ui/generated",
       },
