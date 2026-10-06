@@ -1,6 +1,6 @@
 package com.chunkzero.example.golf
 
-import com.chunkzero.chunk.runtime.SessionScope
+import com.chunkzero.chunk.multistom.SessionScope
 import com.chunkzero.example.golf.physics.BallEvent
 import com.chunkzero.example.golf.physics.Shot
 import com.chunkzero.example.golf.physics.Terrain

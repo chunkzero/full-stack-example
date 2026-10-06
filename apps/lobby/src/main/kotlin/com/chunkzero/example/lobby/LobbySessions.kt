@@ -1,11 +1,11 @@
 package com.chunkzero.example.lobby
 
-import com.chunkzero.chunk.runtime.CoroutineSession
+import com.chunkzero.chunk.multistom.CoroutineSession
+import com.chunkzero.chunk.multistom.SessionScope
+import com.chunkzero.chunk.multistom.coroutines
+import com.chunkzero.chunk.multistom.repeatEvery
 import com.chunkzero.chunk.runtime.SessionProvider
-import com.chunkzero.chunk.runtime.SessionScope
 import com.chunkzero.chunk.runtime.SessionType
-import com.chunkzero.chunk.runtime.coroutines
-import com.chunkzero.chunk.runtime.repeatEvery
 import com.chunkzero.example.generated.BackendTypes.Shared.Players.JoinArgs
 import com.chunkzero.example.generated.CoroutineBackendClient
 import com.chunkzero.example.golf.Course
@@ -13,7 +13,6 @@ import com.chunkzero.example.runGameProcess
 import com.chunkzero.example.ui.ResourcePack
 import com.chunkzero.example.world.GameWorld
 import com.chunkzero.example.world.keepAboveVoid
-import com.chunkzero.window.Windows
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -29,7 +28,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import com.chunkzero.example.golf.BallSkin as BallLook
 
 @SessionType("default")
-class LobbySessions : SessionProvider {
+class LobbySessions : SessionProvider<LobbySession> {
     override fun create() = LobbySession()
 }
 
@@ -51,7 +50,7 @@ class LobbySession : CoroutineSession() {
         val backend = CoroutineBackendClient(scope.coroutines.backend(requireNotNull(scope.backend)))
         catalog = Catalog(backend)
         val departures = Departures(scope)
-        menus = Menus(scope, scope.component(Windows::class.java), backend, catalog, visitors, departures::teeOff)
+        menus = Menus(scope, backend, catalog, visitors, departures::teeOff)
         hotbar = Hotbar(scope) { player, item -> visitors[player]?.let { menus.open(it, item) } }
         green = PracticeGreen(scope, instance, course.hole(0), ::ballLook, hotbar::give)
         val portal =

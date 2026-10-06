@@ -3,6 +3,7 @@ package com.chunkzero.example.ui
 import com.chunkzero.example.ui.generated.ProfileView
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
+import net.minestom.server.entity.Player
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 
@@ -19,8 +20,9 @@ data class ProfileCard(
 )
 
 class ProfileMenu(
+    player: Player,
     initialCard: ProfileCard,
-) : ProfileView() {
+) : ProfileView(player) {
     var card: ProfileCard by state(initialCard)
 
     override fun name(): Component = text(fit(card.name, LINE_WIDTH, UiFont.VANILLA, bold = true))

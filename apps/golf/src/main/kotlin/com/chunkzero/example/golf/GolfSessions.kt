@@ -2,12 +2,12 @@ package com.chunkzero.example.golf
 
 import com.chunkzero.chunk.backend.api.PlayerId
 import com.chunkzero.chunk.backend.client.OperationId
-import com.chunkzero.chunk.runtime.CoroutineSession
+import com.chunkzero.chunk.multistom.CoroutineSession
+import com.chunkzero.chunk.multistom.SessionScope
+import com.chunkzero.chunk.multistom.coroutines
 import com.chunkzero.chunk.runtime.MoveResult
 import com.chunkzero.chunk.runtime.SessionProvider
-import com.chunkzero.chunk.runtime.SessionScope
 import com.chunkzero.chunk.runtime.SessionType
-import com.chunkzero.chunk.runtime.coroutines
 import com.chunkzero.example.generated.BackendTypes.Shared.Courses
 import com.chunkzero.example.generated.BackendTypes.Shared.Players
 import com.chunkzero.example.generated.BackendTypes.Shared.Rounds
@@ -22,7 +22,6 @@ import com.chunkzero.example.ui.ScorecardMenu
 import com.chunkzero.example.ui.ScorecardRow
 import com.chunkzero.example.ui.StatusKind
 import com.chunkzero.example.ui.formatScoreToPar
-import com.chunkzero.example.ui.generated.WindowPack
 import com.chunkzero.example.world.GameWorld
 import com.chunkzero.example.world.keepAboveVoid
 import kotlinx.coroutines.CancellationException
@@ -38,7 +37,6 @@ import net.kyori.adventure.title.Title
 import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
 import net.minestom.server.instance.InstanceContainer
-import net.minestom.server.inventory.Inventory
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import org.slf4j.LoggerFactory
@@ -48,7 +46,7 @@ import kotlin.time.Duration.Companion.seconds
 private const val COURSE = "oakmere"
 
 @SessionType("default")
-class GolfSessions : SessionProvider {
+class GolfSessions : SessionProvider<GolfSession> {
     override fun create() = GolfSession()
 }
 
@@ -70,7 +68,7 @@ class GolfSession :
     private val rounds = LinkedHashMap<Player, PlayerRound>()
     private val roundsPlayed = HashMap<UUID, Int>()
     private val saves = HashSet<Deferred<Rounds.RecordResult?>>()
-    private val scorecards = HashMap<Player, Pair<ScorecardMenu, Inventory>>()
+    private val scorecards = HashMap<Player, ScorecardMenu>()
 
     private val pars: List<Int> get() = course.roundHoles.map { it.par }
 
@@ -154,9 +152,9 @@ class GolfSession :
         player: Player,
         onBack: () -> Unit,
     ) {
-        val menu = ScorecardMenu(courseName, pars, rowsFor(player), onBack)
-        val session = WindowPack.windows().open(player, menu)
-        scorecards[player] = menu to session.inventory
+        val menu = ScorecardMenu(player, courseName, pars, rowsFor(player), onBack) { scorecards.remove(player, it) }
+        menu.open()
+        scorecards[player] = menu
     }
 
     private fun rowsFor(viewer: Player): List<ScorecardRow> =
@@ -165,8 +163,7 @@ class GolfSession :
         }
 
     private fun refreshScorecards() {
-        scorecards.entries.removeIf { (player, open) -> player.openInventory != open.second }
-        scorecards.forEach { (player, open) -> open.first.rows = rowsFor(player) }
+        scorecards.forEach { (player, menu) -> menu.rows = rowsFor(player) }
     }
 
     /**

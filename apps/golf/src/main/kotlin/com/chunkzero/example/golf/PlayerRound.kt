@@ -1,15 +1,16 @@
 package com.chunkzero.example.golf
 
-import com.chunkzero.chunk.runtime.SessionScope
-import com.chunkzero.chunk.runtime.coroutines
+import com.chunkzero.chunk.multistom.SessionScope
+import com.chunkzero.chunk.multistom.coroutines
 import com.chunkzero.example.generated.BackendTypes.Shared.Rounds
 import com.chunkzero.example.golf.physics.BallEvent
 import com.chunkzero.example.golf.physics.Shot
 import com.chunkzero.example.golf.physics.Terrain
+import com.chunkzero.example.ui.GolfHudState
 import com.chunkzero.example.ui.GolfStatus
 import com.chunkzero.example.ui.GolfStatusHud
 import com.chunkzero.example.ui.StatusKind
-import com.chunkzero.example.ui.generated.WindowPack
+import com.chunkzero.window.sendHud
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
@@ -18,6 +19,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.kyori.adventure.sound.Sound
+import net.kyori.adventure.text.Component
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Player
@@ -55,8 +57,18 @@ class PlayerRound(
     val card = RoundCard(holes.map { it.par })
     private val jobs =
         CoroutineScope(scope.coroutines.coroutineContext + SupervisorJob(scope.coroutines.coroutineContext[Job]))
-    private val hud = GolfStatusHud()
-    private val hudSession = WindowPack.windows().show(player, hud)
+    private var status: GolfStatus? = null
+    private val hud =
+        GolfStatusHud(
+            object : GolfHudState {
+                override val hole get() = holes.getOrNull(holeIndex)?.number ?: 1
+                override val holeName get() = holes.getOrNull(holeIndex)?.name ?: ""
+                override val par get() = holes.getOrNull(holeIndex)?.par ?: 0
+                override val stroke get() = card.holes.getOrNull(holeIndex)?.let { it.score ?: it.strokes } ?: 0
+                override val power get() = if (putter.charging) putter.power.value else null
+                override val status get() = this@PlayerRound.status
+            },
+        )
     private val putter = Putter(scope, player, ball = { ball?.position ?: player.position }, onShot = ::shoot)
     private val task =
         scope.scheduler
@@ -88,10 +100,6 @@ class PlayerRound(
         ball = GolfBall(scope, instance, terrain, hole, skin, onEvent = ::onBallEvent)
         ghost?.let { replay = GhostReplay(scope, instance, terrain, hole, it.shots[index], player) }
         placeBehind(player, hole.ballStart, cupCenter)
-        hud.hole = hole.number
-        hud.holeName = hole.name
-        hud.par = hole.par
-        hud.stroke = 0
         holeStartedAt = ticks
         putter.armed = true
     }
@@ -100,7 +108,6 @@ class PlayerRound(
         val ball = ball ?: return
         if (ball.moving || holeCard.finished) return
         holeCard.shoot(shot)
-        hud.stroke = holeCard.strokes
         ball.shoot(shot)
     }
 
@@ -118,7 +125,6 @@ class PlayerRound(
             is BallEvent.OutOfBounds -> {
                 val splash = event.reason == BallEvent.Reason.HAZARD
                 val pickedUp = holeCard.outOfBounds()
-                hud.stroke = holeCard.strokes
                 ball?.place(event.resetPosition)
                 if (pickedUp) {
                     pickedUp()
@@ -162,7 +168,6 @@ class PlayerRound(
 
     private fun finishHole() {
         putter.armed = false
-        hud.stroke = holeCard.score ?: holeCard.strokes
         onHoleFinished(this)
         val last = holeIndex + 1 >= holes.size
         val save = if (last) onRoundFinished(this) else null
@@ -179,17 +184,17 @@ class PlayerRound(
 
     private fun tick() {
         ticks++
-        hud.power = if (putter.charging) putter.power.value else null
         if (statusUntil in 1..ticks) {
-            hud.status = null
+            status = null
             statusUntil = 0
         }
         val playing = holeIndex >= 0 && !holeCard.finished
         if (playing && ticks - holeStartedAt >= HOLE_TIME_LIMIT_TICKS) timedOut()
+        player.sendHud(hud)
     }
 
     fun showStatus(status: GolfStatus) {
-        hud.status = status
+        this.status = status
         statusUntil = ticks + STATUS_TICKS
     }
 
@@ -217,7 +222,7 @@ class PlayerRound(
         task.cancel()
         clearHole()
         putter.close()
-        hudSession.hide()
+        player.sendActionBar(Component.empty())
     }
 
     private companion object {

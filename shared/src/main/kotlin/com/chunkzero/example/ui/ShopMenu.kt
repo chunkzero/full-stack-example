@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.minestom.server.component.DataComponents
+import net.minestom.server.entity.Player
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 
@@ -23,10 +24,11 @@ data class BallSkin(
 )
 
 class ShopMenu(
+    player: Player,
     initialSkins: List<BallSkin>,
     initialCoins: Int,
     private val onSkinClicked: (BallSkin) -> Unit,
-) : ShopView() {
+) : ShopView(player) {
     private val pager = WindowPager(cellCount = 9)
     private var opened = false
     private var offset by state(0)

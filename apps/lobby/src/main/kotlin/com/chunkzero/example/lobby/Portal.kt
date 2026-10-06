@@ -1,8 +1,8 @@
 package com.chunkzero.example.lobby
 
+import com.chunkzero.chunk.multistom.SessionScope
+import com.chunkzero.chunk.multistom.coroutines
 import com.chunkzero.chunk.runtime.MoveResult
-import com.chunkzero.chunk.runtime.SessionScope
-import com.chunkzero.chunk.runtime.coroutines
 import com.chunkzero.example.generated.Destinations
 import com.chunkzero.example.world.BlockRegion
 import kotlinx.coroutines.CancellationException

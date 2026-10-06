@@ -2,8 +2,8 @@ version = 3
 
 [[package]]
 name = "window"
-requested = "0.1.0-nightly.20261005231514.gade26370eaef"
-version = "0.1.0-nightly.20261005231514.gade26370eaef"
+requested = "0.1.0-nightly.20261006042123.gb387ab19a3e1"
+version = "0.1.0-nightly.20261006042123.gb387ab19a3e1"
 rpp = ">=0.1.0-alpha.0"
-url = "https://github.com/chunkzero/window/releases/download/v0.1.0-nightly.20261005231514.gade26370eaef/window-0.1.0-nightly.20261005231514.gade26370eaef.rpp.tgz"
-sha256 = "36d39e02a1526ff0d345b714451a051297a671122e782ebf377362eba10b37d0"
+url = "https://github.com/chunkzero/window/releases/download/v0.1.0-nightly.20261006042123.gb387ab19a3e1/window-0.1.0-nightly.20261006042123.gb387ab19a3e1.rpp.tgz"
+sha256 = "7e44bfc368fb5aee835b56646b70ce2e0663db96fc561d3615ad250dacc837f2"
