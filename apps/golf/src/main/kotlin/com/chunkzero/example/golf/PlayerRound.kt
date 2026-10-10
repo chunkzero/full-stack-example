@@ -35,6 +35,7 @@ import kotlin.time.Duration.Companion.seconds
 /** The course record a ghost replays: the holder's name and their shots for each hole. */
 class Ghost(
     val name: String,
+    val total: Int,
     val shots: List<List<Shot>>,
 )
 

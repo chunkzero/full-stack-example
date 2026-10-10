@@ -107,6 +107,9 @@ export const art = {
   /** 8x6 segments of a progress bar. */
   pipOn: raised(colors.brass, { kind: "button", width: 8, height: 6 }),
   pipOff: sunken(colors.rough, { kind: "button", width: 8, height: 6 }),
+  /** 6x5 segments of the sidebar's progress bar. */
+  pipSmallOn: raised(colors.brass, { kind: "button", width: 6, height: 5 }),
+  pipSmallOff: sunken(colors.rough, { kind: "button", width: 6, height: 5 }),
   /** 8x8, an unlit segment of the HUD power meter. */
   meterTrack: sunken(colors.rough, { kind: "button", width: 8, height: 8 }),
 };

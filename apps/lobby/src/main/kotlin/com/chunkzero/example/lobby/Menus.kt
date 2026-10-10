@@ -40,7 +40,8 @@ class Menus(
     private val teeOff: (Player) -> Unit,
 ) {
     private var course: CourseSummary? = null
-    private var record: CourseRecord? = null
+    var record: CourseRecord? = null
+        private set
 
     init {
         watching("course record") { backend.shared.rounds.watchCourseRecord(CourseRecordArgs(OAKMERE)) }
@@ -95,7 +96,7 @@ class Menus(
             )
         }
 
-    private suspend fun personalBest(visitor: Visitor): Int? =
+    suspend fun personalBest(visitor: Visitor): Int? =
         visitor.backend.shared.rounds
             .personalBest(PersonalBestArgs(OAKMERE))
             ?.toInt()
@@ -132,7 +133,7 @@ class Menus(
         visitors.values.forEach { (it.window?.view as? PlayMenu)?.playerCount = visitors.size }
     }
 
-    private suspend fun course(): CourseSummary =
+    suspend fun course(): CourseSummary =
         course ?: requireNotNull(backend.shared.courses.course(CourseArgs(OAKMERE))) { "Unknown course $OAKMERE" }
             .let { CourseSummary(it.name(), it.pars().sumOf(Long::toInt), it.pars().size) }
             .also { course = it }

@@ -31,15 +31,19 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
 import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
 import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
+import net.minestom.server.sound.SoundEvent
 import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
@@ -126,10 +130,26 @@ class GolfSession :
         scope.own(player, round)
         refreshScorecards()
 
-        player.showTitle(Title.title(Component.text(courseName), Component.text("Nine holes. Right-click to putt.")))
+        player.showTitle(
+            Title.title(
+                Component.text(courseName, NamedTextColor.GOLD),
+                Component.text("${course.roundHoles.size} holes  ·  Par ${pars.sum()}", NamedTextColor.GRAY),
+                TITLE_TIMES,
+            ),
+        )
+        player.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_CHIME, Sound.Source.PLAYER, 0.6f, 1.2f))
+        player.sendMessage(
+            Component
+                .text("Right-click to start your swing, right-click again to putt. ", NamedTextColor.GRAY)
+                .append(Component.text("Take your time; every hole has two minutes.", NamedTextColor.DARK_GRAY)),
+        )
         ghost?.let {
             player.sendMessage(
-                Component.text("Racing ${it.name}'s course record ghost.", NamedTextColor.GRAY),
+                Component
+                    .text("Course record: ", NamedTextColor.GRAY)
+                    .append(
+                        Component.text("${it.total} (${formatScoreToPar(it.total - pars.sum())})", NamedTextColor.GOLD),
+                    ).append(Component.text(" by ${it.name}. Their ghost plays alongside you.", NamedTextColor.GRAY)),
             )
         }
         round.start()
@@ -262,8 +282,31 @@ class GolfSession :
         card: RoundCard,
         result: Rounds.RecordResult?,
     ) {
-        val line = "Round complete: ${card.total} (${formatScoreToPar(card.toPar)})"
-        player.sendMessage(Component.text(line, NamedTextColor.GOLD))
+        val toPar = formatScoreToPar(card.toPar)
+        val scoreColor =
+            when {
+                card.toPar < 0 -> NamedTextColor.GREEN
+                card.toPar > 0 -> NamedTextColor.RED
+                else -> NamedTextColor.WHITE
+            }
+        val headline =
+            when {
+                result?.courseRecord() == true -> "New course record!"
+                result?.personalBest() == true -> "New personal best!"
+                else -> "Round complete"
+            }
+        player.showTitle(
+            Title.title(
+                Component.text("${card.total}  $toPar", scoreColor, TextDecoration.BOLD),
+                Component.text(headline, NamedTextColor.GOLD),
+                TITLE_TIMES,
+            ),
+        )
+        player.sendMessage(
+            Component
+                .text("$headline  ·  ", NamedTextColor.GOLD)
+                .append(Component.text("${card.total} strokes, $toPar at $courseName.", NamedTextColor.GRAY)),
+        )
         if (result == null) {
             player.sendMessage(
                 Component.text("Your round couldn't be saved, so no rewards this time.", NamedTextColor.RED),
@@ -271,13 +314,15 @@ class GolfSession :
             rounds[player]?.showStatus(GolfStatus("Round not saved", StatusKind.BAD))
             return
         }
-        player.sendMessage(Component.text("+${result.coins()} coins, +${result.xp()} XP", NamedTextColor.YELLOW))
-        if (result.courseRecord()) {
-            player.sendMessage(Component.text("New course record!", NamedTextColor.GREEN))
-        } else if (result.personalBest()) {
-            player.sendMessage(Component.text("New personal best!", NamedTextColor.GREEN))
-        }
-        rounds[player]?.showStatus(GolfStatus("Round complete", StatusKind.GOOD))
+        player.sendMessage(
+            Component
+                .text("Earned ", NamedTextColor.GRAY)
+                .append(Component.text("${result.coins()} ◆", NamedTextColor.GOLD))
+                .append(Component.text(" and ", NamedTextColor.GRAY))
+                .append(Component.text("${result.xp()} XP", NamedTextColor.AQUA))
+                .append(Component.text(". Back to the clubhouse shortly.", NamedTextColor.GRAY)),
+        )
+        rounds[player]?.showStatus(GolfStatus(headline, StatusKind.GOOD))
     }
 
     private suspend fun moveToLobby(player: Player) {
@@ -348,6 +393,7 @@ class GolfSession :
                 ?.let { record ->
                     Ghost(
                         record.name(),
+                        record.total().toInt(),
                         record.shots().map { hole ->
                             hole.map { Shot(it.yaw().toFloat(), it.power()) }
                         },
@@ -365,6 +411,7 @@ class GolfSession :
         const val RECORD_ATTEMPTS = 4
         val RECORD_RETRY_DELAY = 3.seconds
         val RESULTS_DELAY = 15.seconds
+        val TITLE_TIMES = Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(2500), Duration.ofMillis(600))
     }
 }
 
