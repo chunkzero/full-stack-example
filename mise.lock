@@ -8,7 +8,7 @@ backend = "chunkzero:chunk-nightly"
 specifiers = ["latest"]
 
 [[tools."chunkzero:rpp-nightly"]]
-version = "0.1.0-nightly.20261005182523.g09faa791490c"
+version = "0.1.0-nightly.20261008133812.g121b31a3e9a2"
 backend = "chunkzero:rpp-nightly"
 specifiers = ["latest"]
 

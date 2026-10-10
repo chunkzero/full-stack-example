@@ -1,12 +1,10 @@
 package com.chunkzero.example.ui
 
-import com.chunkzero.example.ui.generated.WindowDefinitions
-import com.chunkzero.window.WindowScope
-import com.chunkzero.window.WindowView
-import com.chunkzero.window.multistom.MultistomHost
+import com.chunkzero.example.ui.generated.ScorecardView
+import com.chunkzero.window.Click
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.entity.Player
-import net.minestom.server.item.ItemStack
 
 data class ScorecardRow(
     val name: String,
@@ -22,66 +20,58 @@ class ScorecardMenu(
     initialRows: List<ScorecardRow>,
     private val onBack: () -> Unit,
     private val onClosed: (ScorecardMenu) -> Unit,
-) : WindowView<ItemStack>(WindowDefinitions.scorecard, MultistomHost.of(player)) {
+) : ScorecardView(player) {
     var rows: List<ScorecardRow> by state(initialRows)
 
-    override fun WindowScope<ItemStack>.bind() {
-        slot("course") { text(course.uppercase(), UiColors.GOLD) }
-        slot("par_total") { text(pars.take(HOLES).sum().toString(), UiColors.GOLD) }
-        slot("par_score") { text("") }
-        for (hole in 1..HOLES) {
-            slot("par_h$hole") { text(pars.getOrNull(hole - 1)?.toString() ?: "", UiColors.GOLD) }
-        }
-        for (i in 0 until MAX_PLAYERS) {
-            slot("p${i}_name") { nameOf(rows.getOrNull(i)) }
-            slot("p${i}_total") { totalOf(rows.getOrNull(i)) }
-            slot("p${i}_score") { scoreOf(rows.getOrNull(i)) }
-            for (hole in 1..HOLES) {
-                slot("p${i}_h$hole") { strokesOf(rows.getOrNull(i), hole - 1) }
-            }
-        }
-        button("back") { onBack() }
+    override fun course(): Component = text(course.uppercase())
+
+    override fun holePar(index: Int): Component = text(pars.getOrNull(index)?.toString().orEmpty())
+
+    override fun parTotal(): Component = text(pars.take(HOLE_PAR_SIZE).sum().toString())
+
+    override fun playerName(index: Int): Component = text(rows.getOrNull(index)?.name.orEmpty())
+
+    override fun viewer(index: Int): Boolean = rows.getOrNull(index)?.isViewer == true
+
+    override fun strokes(
+        row: Int,
+        column: Int,
+    ): Component {
+        val strokes = rows.getOrNull(row)?.strokes?.getOrNull(column) ?: return text("")
+        val par = pars.getOrNull(column) ?: return text(strokes.toString())
+        return text(strokes.toString(), toParColor(strokes - par))
     }
+
+    override fun total(index: Int): Component {
+        val strokes = rows.getOrNull(index)?.strokes.orEmpty()
+        return if (strokes.all { it == null }) text("") else text(strokes.sumOf { it ?: 0 }.toString())
+    }
+
+    override fun score(index: Int): Component {
+        val played =
+            rows
+                .getOrNull(index)
+                ?.strokes
+                .orEmpty()
+                .withIndex()
+                .filter { it.value != null }
+        if (played.isEmpty()) return text("")
+        val difference = played.sumOf { it.value!! - (pars.getOrNull(it.index) ?: 0) }
+        return text(formatScoreToPar(difference), toParColor(difference))
+    }
+
+    override fun onBack(click: Click) = onBack.invoke()
 
     override fun onClose() = onClosed(this)
 
-    private fun nameOf(row: ScorecardRow?): Component {
-        row ?: return text("")
-        return text(fit(row.name, NAME_WIDTH, UiFont.SMALL_CAPS), if (row.isViewer) UiColors.GOLD else UiColors.WHITE)
-    }
-
-    private fun strokesOf(
-        row: ScorecardRow?,
-        index: Int,
-    ): Component {
-        val strokes = row?.strokes?.getOrNull(index) ?: return text("")
-        val par = pars.getOrNull(index) ?: return text(strokes.toString())
-        return text(
-            strokes.toString(),
-            when {
-                strokes < par -> UiColors.GREEN
-                strokes > par -> UiColors.RED
-                else -> UiColors.WHITE
-            },
-        )
-    }
-
-    private fun totalOf(row: ScorecardRow?): Component {
-        row ?: return text("")
-        return if (row.strokes.all { it == null }) text("") else text(row.strokes.sumOf { it ?: 0 }.toString())
-    }
-
-    private fun scoreOf(row: ScorecardRow?): Component {
-        row ?: return text("")
-        val played = row.strokes.withIndex().filter { it.value != null }
-        if (played.isEmpty()) return text("")
-        val difference = played.sumOf { it.value!! - (pars.getOrNull(it.index) ?: 0) }
-        return scoreToParComponent(difference)
-    }
+    private fun toParColor(difference: Int): TextColor? =
+        when {
+            difference < 0 -> UiColors.INK_GREEN
+            difference > 0 -> UiColors.INK_RED
+            else -> null
+        }
 
     companion object {
-        const val MAX_PLAYERS = 8
-        private const val HOLES = 9
-        private const val NAME_WIDTH = 44
+        const val MAX_PLAYERS = PLAYER_NAME_SIZE
     }
 }
