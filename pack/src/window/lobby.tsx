@@ -1,5 +1,5 @@
 import { Hud, Image, Switch, Text } from "plugin:window/ui";
-import type { Child, TextProps } from "plugin:window/ui";
+import type { TextProps } from "plugin:window/ui";
 import { flag, text, value } from "plugin:window/bind";
 import { Row, art, labels, palette, styles } from "./theme/index.ts";
 
@@ -8,25 +8,14 @@ const best = text("best");
 const bestTone = value("best_tone", ["none", "even", "under", "over"]);
 
 const right: TextProps = { ...labels, align: "right" };
-/** Quiet labels beside bold values. */
+/** Quiet lines beside the values. */
 const soft: TextProps = { color: palette.soft };
-const strong: TextProps = { bold: true, color: palette.cream };
-
-/** A quiet label on the left and a bold value flush right. */
-function Stat(props: { label: string; children: Child }) {
-  return (
-    <Row width={96}>
-      <Text width={36} align="left" style={soft}>
-        {props.label}
-      </Text>
-      {props.children}
-    </Row>
-  );
-}
+const strong: TextProps = { color: palette.cream };
 
 /**
- * The clubhouse HUDs, one per corner, drawn straight over the world: values bold and cream, labels soft. Shader HUDs
- * draw text in its authored color, so the best round picks a tone.
+ * The clubhouse HUDs, one per corner, drawn straight over the world: values cream, quiet lines soft. Bold stays off
+ * the small-caps font, whose one-pixel digit counters it fills in. Shader HUDs draw text in its authored color, so the
+ * best round picks a tone.
  */
 export default [
   <Hud name="lobby_golfer" anchor="top-left" offset={[6, 6]} gap={4} text={labels}>
@@ -49,22 +38,15 @@ export default [
 
   <Hud name="lobby_wallet" anchor="top-right" offset={[-6, 6]} gap={3} text={right}>
     <Text bind={text("coins")} style={styles.heading} width={96} margin={{ bottom: 1 }} />
-    <Stat label="Best">
-      <Switch on={bestTone} grow>
-        {{
-          none: <Text bind={best} style={soft} />,
-          even: <Text bind={best} style={strong} />,
-          under: <Text bind={best} bold color={palette.green} />,
-          over: <Text bind={best} bold color={palette.red} />,
-        }}
-      </Switch>
-    </Stat>
-    <Stat label="Rounds">
-      <Text bind={text("rounds")} grow style={strong} />
-    </Stat>
-    <Stat label="Aces">
-      <Text bind={text("aces")} grow style={strong} />
-    </Stat>
+    <Switch on={bestTone}>
+      {{
+        none: <Text bind={best} width={96} style={soft} />,
+        even: <Text bind={best} width={96} style={strong} />,
+        under: <Text bind={best} width={96} color={palette.green} />,
+        over: <Text bind={best} width={96} color={palette.red} />,
+      }}
+    </Switch>
+    <Text bind={text("tally")} width={96} style={soft} />
   </Hud>,
 
   <Hud name="lobby_course" anchor="bottom-right" offset={[-6, -6]} gap={3} text={right}>

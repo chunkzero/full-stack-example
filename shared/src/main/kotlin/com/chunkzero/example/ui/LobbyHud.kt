@@ -44,8 +44,8 @@ class LobbyHuds(
         override fun coins(): Component = text("${stats.coins} ◆")
 
         override fun best(): Component {
-            val best = stats.best ?: return text("none yet")
-            return text("$best (${formatScoreToPar(best - stats.coursePar)})")
+            val best = stats.best ?: return text("Best none yet")
+            return text("Best $best (${formatScoreToPar(best - stats.coursePar)})")
         }
 
         override fun bestTone(): BestTone {
@@ -57,9 +57,7 @@ class LobbyHuds(
             }
         }
 
-        override fun rounds(): Component = text(stats.rounds.toString())
-
-        override fun aces(): Component = text(stats.aces.toString())
+        override fun tally(): Component = text("${plural(stats.rounds, "round")} · ${plural(stats.aces, "ace")}")
     }
 
     private inner class Course : LobbyCourseHud() {
