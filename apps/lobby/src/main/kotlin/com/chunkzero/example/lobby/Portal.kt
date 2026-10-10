@@ -12,6 +12,7 @@ import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.title.Title
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.Entity
@@ -21,6 +22,7 @@ import net.minestom.server.entity.metadata.display.AbstractDisplayMeta
 import net.minestom.server.entity.metadata.display.TextDisplayMeta
 import net.minestom.server.instance.Instance
 import net.minestom.server.sound.SoundEvent
+import java.time.Duration
 
 /** Whether a player standing at [position] has their feet or head inside the region. */
 fun BlockRegion.containsPlayer(position: Point) = contains(position) || contains(position.add(0.0, 1.0, 0.0))
@@ -87,7 +89,13 @@ class Departures(
     fun teeOff(player: Player) {
         if (!leaving.add(player)) return
         player.closeInventory()
-        player.sendActionBar(Component.text("Heading to the first tee...", NamedTextColor.GOLD))
+        player.showTitle(
+            Title.title(
+                Component.empty(),
+                Component.text("Heading to the first tee...", NamedTextColor.GOLD),
+                Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(2000), Duration.ofMillis(400)),
+            ),
+        )
         player.playSound(Sound.sound(SoundEvent.BLOCK_PORTAL_TRIGGER, Sound.Source.MASTER, 0.3f, 1.6f))
         scope.coroutines.launch {
             val result =

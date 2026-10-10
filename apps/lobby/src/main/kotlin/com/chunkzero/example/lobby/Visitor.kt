@@ -2,15 +2,14 @@ package com.chunkzero.example.lobby
 
 import com.chunkzero.example.generated.BackendTypes.Shared.Players.ProfileResult
 import com.chunkzero.example.generated.CoroutineBackendClient
+import com.chunkzero.example.ui.LobbyHuds
 import com.chunkzero.example.ui.LobbyStats
-import com.chunkzero.example.ui.LobbyStatsHud
+import com.chunkzero.window.HudChannel
+import com.chunkzero.window.HudStack
 import com.chunkzero.window.WindowSession
-import com.chunkzero.window.multistom.showHud
-import net.kyori.adventure.text.Component
 import net.minestom.server.entity.Player
-import net.minestom.server.scoreboard.Sidebar
 
-/** One player in the clubhouse: their own backend client, latest profile, open menu and sidebar. */
+/** One player in the clubhouse: their own backend client, latest profile, open menu and HUDs. */
 class Visitor(
     val player: Player,
     val backend: CoroutineBackendClient,
@@ -20,7 +19,10 @@ class Visitor(
     /** Their best round on the course, fetched once when they arrive. */
     var personalBest: Int? = null
     var window: WindowSession? = null
-    private var board: StatsBoard? = null
+
+    /** Everything this player's action bar shows: the clubhouse HUDs, and the practice green's while putting. */
+    val huds = HudStack(HudChannel.ACTION_BAR)
+    private var lobbyHuds: LobbyHuds? = null
 
     /** Set while a menu is loading or a shop mutation is in flight, so repeated clicks are ignored. */
     var busy = false
@@ -53,49 +55,18 @@ class Visitor(
         unsettled = null
     }
 
-    /** Shows [stats] on this player's clubhouse sidebar, creating it on first use. */
+    /** Shows [stats] on the clubhouse HUDs, adding them to [huds] on first use. */
     fun showStats(stats: LobbyStats) {
-        val board = board
-        if (board == null) this.board = StatsBoard(player, stats) else board.show(stats)
+        val current = lobbyHuds
+        if (current != null) {
+            current.stats = stats
+        } else {
+            lobbyHuds = LobbyHuds(stats).also { it.views.forEach(huds::add) }
+        }
     }
 
     override fun close() {
         window?.close()
         window = null
-        board?.close()
-        board = null
-    }
-}
-
-/**
- * A sidebar whose title is the [LobbyStatsHud], over blank score lines that lift it towards the top of the screen.
- * The HUD's frame is sized to cover the vanilla backdrop of exactly [LINES] lines, the `lines` of lobby.tsx.
- */
-private class StatsBoard(
-    private val player: Player,
-    stats: LobbyStats,
-) : AutoCloseable {
-    private val hud = LobbyStatsHud(stats)
-    private val sidebar =
-        Sidebar(Component.empty()).apply {
-            repeat(LINES) { line ->
-                createLine(Sidebar.ScoreboardLine("$line", Component.empty(), line, Sidebar.NumberFormat.blank()))
-            }
-            showHud(hud)
-            addViewer(player)
-        }
-
-    fun show(stats: LobbyStats) {
-        if (stats == hud.stats) return
-        hud.stats = stats
-        sidebar.showHud(hud)
-    }
-
-    override fun close() {
-        sidebar.removeViewer(player)
-    }
-
-    private companion object {
-        const val LINES = 15
     }
 }

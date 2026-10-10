@@ -16,6 +16,7 @@ import com.chunkzero.example.ui.ResourcePack
 import com.chunkzero.example.ui.formatScoreToPar
 import com.chunkzero.example.world.GameWorld
 import com.chunkzero.example.world.keepAboveVoid
+import com.chunkzero.window.sendHud
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -32,7 +33,6 @@ import net.minestom.server.sound.SoundEvent
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import com.chunkzero.example.golf.BallSkin as BallLook
 
 @SessionType("default")
@@ -61,7 +61,7 @@ class LobbySession : CoroutineSession() {
         val departures = Departures(scope)
         menus = Menus(scope, backend, catalog, visitors, departures::teeOff)
         hotbar = Hotbar(scope) { player, item -> visitors[player]?.let { menus.open(it, item) } }
-        green = PracticeGreen(scope, instance, course.hole(0), ::ballLook, hotbar::give)
+        green = PracticeGreen(scope, instance, course.hole(0), ::ballLook, hotbar::give) { visitors[it]?.huds }
         val portal =
             Portal(scope, instance, course.portals.map { it.region }) { player ->
                 if (player in visitors) departures.teeOff(player)
@@ -70,7 +70,12 @@ class LobbySession : CoroutineSession() {
             portal.update(visitors.keys)
             green.update(visitors.keys)
         }
-        scope.repeatEvery(BOARD_REFRESH) { visitors.values.forEach(::showStats) }
+        scope.repeatEvery(HUD_TICK) {
+            for (visitor in visitors.values) {
+                showStats(visitor)
+                visitor.player.sendHud(visitor.huds)
+            }
+        }
         spawnNpcs(scope, instance, course.npcs) { player, item -> visitors[player]?.let { menus.open(it, item) } }
         showLeaderboards(scope, instance, course.leaderboards, backend)
     }
@@ -98,7 +103,7 @@ class LobbySession : CoroutineSession() {
     }
 
     /**
-     * Registers the golfer, greets them, then follows their profile for live menus, their sidebar and their ball skin.
+     * Registers the golfer, greets them, then follows their profile for live menus, their HUDs and their ball skin.
      */
     private suspend fun welcome(visitor: Visitor) {
         val player = visitor.player
@@ -119,7 +124,6 @@ class LobbySession : CoroutineSession() {
         if (visitors[player] !== visitor) return
         greet(visitor, profile)
         if (visitor.profile == null) visitor.profile = profile
-        showStats(visitor)
         val profiles =
             watching("profile ${player.username}") { players.watchProfile() }
                 .onEach { live ->
@@ -172,7 +176,7 @@ class LobbySession : CoroutineSession() {
         )
     }
 
-    /** Refreshes the visitor's sidebar; it appears once their profile and the course are known. */
+    /** Refreshes the visitor's clubhouse HUDs; they appear once their profile and the course are known. */
     private fun showStats(visitor: Visitor) {
         val profile = visitor.profile ?: return
         visitor.showStats(
@@ -200,7 +204,7 @@ class LobbySession : CoroutineSession() {
 
     private companion object {
         val REGION_CHECK = 100.milliseconds
-        val BOARD_REFRESH = 1.seconds
+        val HUD_TICK = 50.milliseconds
         val logger = LoggerFactory.getLogger(LobbySession::class.java)!!
     }
 }

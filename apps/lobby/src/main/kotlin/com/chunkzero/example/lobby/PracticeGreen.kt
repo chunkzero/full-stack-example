@@ -14,7 +14,7 @@ import com.chunkzero.example.ui.GolfHudState
 import com.chunkzero.example.ui.GolfStatus
 import com.chunkzero.example.ui.GolfStatusHud
 import com.chunkzero.example.ui.StatusKind
-import com.chunkzero.window.sendHud
+import com.chunkzero.window.HudStack
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.entity.Player
@@ -26,7 +26,7 @@ import com.chunkzero.example.golf.BallSkin as BallLook
 /**
  * The practice green: stepping onto [hole] swaps the hotbar for a putter and the player's own ball at the tee. Nothing
  * is scored; leaving by any means removes both and calls [onLeave] to restore the hotbar. Each player keeps one putter
- * for the whole session, armed only while practising.
+ * for the whole session, armed only while practising. The putting HUD joins the player's action bar [huds] meanwhile.
  */
 class PracticeGreen(
     private val scope: SessionScope,
@@ -34,6 +34,7 @@ class PracticeGreen(
     private val hole: Hole,
     private val lookOf: (Player) -> BallLook,
     private val onLeave: (Player) -> Unit,
+    private val huds: (Player) -> HudStack?,
 ) {
     private val terrain = InstanceTerrain(instance)
     private val practices = HashMap<Player, Practice>()
@@ -107,13 +108,9 @@ class PracticeGreen(
                     override val status get() = notice
                 },
             )
-        private val hudTask =
-            scope.scheduler
-                .buildTask { player.sendHud(hud) }
-                .repeat(TaskSchedule.tick(1))
-                .schedule()
 
         init {
+            huds(player)?.add(hud)
             player.inventory.clear()
             player.inventory.setItemStack(0, Putter.item())
             player.setHeldItemSlot(0)
@@ -168,11 +165,10 @@ class PracticeGreen(
         }
 
         override fun close() {
-            hudTask.cancel()
+            huds(player)?.remove(hud)
             reset?.cancel()
             putter.armed = false
             ball.close()
-            player.sendActionBar(Component.empty())
         }
     }
 }

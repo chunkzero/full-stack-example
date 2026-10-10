@@ -60,6 +60,12 @@ const flat = (fill: (get: <T>(token: Token<T>) => T) => Color) =>
 const stud = (fill: Token<Color>, size: number) =>
   raised(fill, { kind: "button", width: size, height: size, radius: Math.ceil(size / 2), border_width: 0 });
 
+/** A flat 3x3 square. */
+const tick = (fill: Token<Color>) =>
+  derive((get) =>
+    shape({ kind: "panel", fill: get(fill), width: 3, height: 3, border_width: 0, inset_depth: 0, radius: 0 }),
+  );
+
 /** A lit segment of the HUD power meter. */
 export const meterSegment = (fill: Color) => raised(fill, { kind: "button", width: 8, height: 8 });
 
@@ -107,9 +113,9 @@ export const art = {
   /** 8x6 segments of a progress bar. */
   pipOn: raised(colors.brass, { kind: "button", width: 8, height: 6 }),
   pipOff: sunken(colors.rough, { kind: "button", width: 8, height: 6 }),
-  /** 6x5 segments of the sidebar's progress bar. */
-  pipSmallOn: raised(colors.brass, { kind: "button", width: 6, height: 5 }),
-  pipSmallOff: sunken(colors.rough, { kind: "button", width: 6, height: 5 }),
+  /** 3x3 segments of the lobby HUD's XP bar: brass over a dark track. */
+  xpOn: tick(colors.brass),
+  xpOff: tick(colors.outline),
   /** 8x8, an unlit segment of the HUD power meter. */
   meterTrack: sunken(colors.rough, { kind: "button", width: 8, height: 8 }),
 };

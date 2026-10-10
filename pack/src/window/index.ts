@@ -7,4 +7,4 @@ import profile from "./profile.tsx";
 import scorecard from "./scorecard.tsx";
 import shop from "./shop.tsx";
 
-export default defineWindows({ windows: [play, shop, profile, scorecard], huds: [golf, lobby] });
+export default defineWindows({ windows: [play, shop, profile, scorecard], huds: [golf, ...lobby] });

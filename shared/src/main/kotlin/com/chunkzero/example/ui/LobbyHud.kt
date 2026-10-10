@@ -1,9 +1,12 @@
 package com.chunkzero.example.ui
 
-import com.chunkzero.example.ui.generated.LobbyHud
+import com.chunkzero.example.ui.generated.LobbyCourseHud
+import com.chunkzero.example.ui.generated.LobbyGolferHud
+import com.chunkzero.example.ui.generated.LobbyWalletHud
+import com.chunkzero.window.HudView
 import net.kyori.adventure.text.Component
 
-/** What the clubhouse sidebar shows a golfer. [best] is their best round on a course of par [coursePar]. */
+/** What the clubhouse HUDs show a golfer. [best] is their best round on a course of par [coursePar]. */
 data class LobbyStats(
     val name: String,
     val level: Int,
@@ -18,39 +21,59 @@ data class LobbyStats(
     val golfers: Int,
 )
 
-/** The clubhouse sidebar, composed for a sidebar's title. */
-class LobbyStatsHud(
+/**
+ * The clubhouse HUDs, composed for the action bar and all reading [stats]: the golfer at the top left, their coins and
+ * best round at the top right, and the course at the bottom right. Shader HUDs draw text in its authored colour, so
+ * the best round picks a tone instead of colouring its score to par.
+ */
+class LobbyHuds(
     var stats: LobbyStats,
-) : LobbyHud() {
-    override fun name(): Component = text(stats.name)
+) {
+    val views: List<HudView> = listOf(Golfer(), Wallet(), Course())
 
-    override fun level(): Component = text("Level ${stats.level}")
+    private inner class Golfer : LobbyGolferHud() {
+        override fun level(): Component = text("Lv ${stats.level}")
 
-    override fun xp(index: Int): Boolean = index < stats.xp * XP_SIZE / stats.xpForNextLevel.coerceAtLeast(1)
+        override fun name(): Component = text(stats.name)
 
-    override fun xpText(): Component = text("${stats.xp} / ${stats.xpForNextLevel} XP")
+        override fun xpBar(index: Int): Boolean = index < stats.xp * XP_BAR_SIZE / stats.xpForNextLevel.coerceAtLeast(1)
 
-    override fun coins(): Component = text("${stats.coins} ◆", UiColors.GOLD)
-
-    override fun best(): Component = stats.best?.let { formatRound(it, stats.coursePar) } ?: text("–", UiColors.MUTED)
-
-    override fun rounds(): Component = text(stats.rounds.toString())
-
-    override fun aces(): Component = text(stats.aces.toString())
-
-    override fun record(): Component {
-        val record = stats.record ?: return text("No record yet", UiColors.MUTED)
-        return formatRound(record.strokes, stats.coursePar).append(text(" · ${record.holder}", UiColors.MUTED))
+        override fun xpText(): Component = text("${stats.xp} / ${stats.xpForNextLevel} XP")
     }
 
-    override fun golfers(): Component =
-        text(
-            if (stats.golfers ==
-                1
-            ) {
-                "1 golfer here"
-            } else {
-                "${stats.golfers} golfers here"
-            },
-        )
+    private inner class Wallet : LobbyWalletHud() {
+        override fun coins(): Component = text("${stats.coins} ◆")
+
+        override fun best(): Component {
+            val best = stats.best ?: return text("Best –")
+            return text("Best $best (${formatScoreToPar(best - stats.coursePar)})")
+        }
+
+        override fun bestTone(): BestTone {
+            val difference = (stats.best ?: return BestTone.NONE) - stats.coursePar
+            return when {
+                difference < 0 -> BestTone.UNDER
+                difference > 0 -> BestTone.OVER
+                else -> BestTone.EVEN
+            }
+        }
+
+        override fun tally(): Component = text("${plural(stats.rounds, "round")} · ${plural(stats.aces, "ace")}")
+    }
+
+    private inner class Course : LobbyCourseHud() {
+        override fun record(): Component {
+            val record = stats.record ?: return text("No record yet")
+            return text(
+                "Record ${record.strokes} (${formatScoreToPar(record.strokes - stats.coursePar)}) · ${record.holder}",
+            )
+        }
+
+        override fun golfers(): Component = text("${plural(stats.golfers, "golfer")} here")
+    }
 }
+
+private fun plural(
+    count: Int,
+    noun: String,
+): String = if (count == 1) "1 $noun" else "$count ${noun}s"
