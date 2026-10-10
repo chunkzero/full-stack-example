@@ -9,7 +9,7 @@ const xp = flag("xp", { shape: [16] });
 function Tile(props: { bind: TextHandle; title: string }) {
   return (
     <Column width={52} height={34} frame={art.recess} padding={{ top: 6 }} gap={4}>
-      <Text align="center" color={palette.muted}>
+      <Text width={52} align="center" color={palette.muted}>
         {props.title}
       </Text>
       <Text bind={props.bind} style={styles.heading} align="center" />

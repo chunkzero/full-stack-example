@@ -57,7 +57,7 @@ export default (
   >
     <Column
       x={8}
-      y={17}
+      y={18}
       width={160}
       height={119}
       frame={art.paper}
@@ -91,7 +91,7 @@ export default (
         ))}
       </Column>
     </Column>
-    <Row x={8} y={139} width={160} height={18} frame={art.recess}>
+    <Row x={8} y={139} width={160} height={16} frame={art.recess}>
       <Text width={54} align="center" color={palette.green}>
         Under par
       </Text>

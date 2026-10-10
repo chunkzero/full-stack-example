@@ -28,7 +28,7 @@ function Card(props: { index: number }) {
         <Box x={0} y={0} width={16} height={16}>
           <Items bind={icon.at(i)} />
         </Box>
-        <Text bind={price.at(i)} x={18} y={4} width={31} align="right" />
+        <Text bind={price.at(i)} x={17} y={4} width={31} align="right" />
         <Text bind={name.at(i)} x={3} y={17} width={46} lines={2} lineHeight={7} />
         <Region onClick={pick.at(i)} />
       </Box>
@@ -45,14 +45,14 @@ export default (
         <Card index={i} />
       ))}
     </Section>
-    <Box x={8} y={player.bounds.y - 9} width={160} height={1} frame={art.rule} />
-    <Row x={62} y={player.bounds.y - 1} width={52} height={16} frame={art.recess}>
+    <Box x={8} y={player.bounds.y - 8} width={160} height={1} frame={art.rule} />
+    <Row x={62} y={player.bounds.y} width={52} height={16} frame={art.recess}>
       <Text bind={text("page")} align="center" />
     </Row>
-    <Row x={8} y={player.bounds.y + 17} width={160} height={34} frame={art.recess} padding={{ left: 4, right: 4 }}>
+    <Row x={8} y={player.bounds.y + 18} width={160} height={34} frame={art.recess} padding={{ left: 4, right: 4 }}>
       <Text bind={text("message")} align="center" lines={2} />
     </Row>
-    <Row x={8} y={hotbar.bounds.y - 1} width={106} height={16} frame={art.recess} padding={{ left: 6, right: 6 }}>
+    <Row x={8} y={hotbar.bounds.y} width={106} height={16} frame={art.recess} padding={{ left: 6, right: 6 }}>
       <Text width={40} color={palette.muted}>
         Coins
       </Text>

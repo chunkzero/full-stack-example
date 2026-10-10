@@ -17,7 +17,7 @@ function Stat(props: { bind: TextHandle; title: string }) {
 
 export default (
   <Window name="play" container="generic_9x2" title="Chunk Golf">
-    <Column x={8} y={17} width={160} height={66} frame={art.recess} padding={{ top: 6, left: 6, right: 6 }} gap={3}>
+    <Column x={8} y={18} width={160} height={65} frame={art.recess} padding={{ top: 6, left: 6, right: 6 }} gap={3}>
       <Text bind={text("course")} style={styles.heading} align="center" overflow="ellipsis" />
       <Text bind={text("course_info")} align="center" color={palette.muted} />
       <Box frame={art.rule} height={1} margin={{ bottom: 1 }} />

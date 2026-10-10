@@ -52,17 +52,17 @@ export function Window(props: WindowProps) {
   const layout = containerLayout(props.container);
   const { hotbar } = layout.sections;
   const bottom = hotbar.bounds.y + hotbar.bounds.height + 5;
-  const nails = [1, bottom + 3].flatMap((y) => [-3, 176].map((x) => <Image art={art.nail} x={x} y={y} />));
+  const nails = [8, bottom + 3].flatMap((y) => [-3, 176].map((x) => <Image art={art.nail} x={x} y={y} />));
   return (
     <BaseWindow
       {...rest}
-      bleed={{ top: 3, right: 6, bottom: Math.max(0, bottom + 8 - layout.height), left: 6 }}
+      bleed={{ top: 0, right: 6, bottom: Math.max(0, bottom + 8 - layout.height), left: 6 }}
       text={{ ...labels, ...text }}
     >
-      <Box frame={art.rail} x={-6} y={-3} width={188} height={bottom + 11} />
-      <Box frame={art.felt} x={2} y={15} width={172} height={bottom - 15} />
+      <Box frame={art.rail} x={-6} y={2} width={188} height={bottom + 6} />
+      <Box frame={art.felt} x={2} y={16} width={172} height={bottom - 16} />
       {nails}
-      <Row x={28} y={3} width={120} height={12} frame={art.plaque} justify="center" text={styles.ink}>
+      <Row x={28} y={4} width={120} height={10} frame={art.plaque} justify="center" text={styles.ink}>
         {title}
       </Row>
       {children}
