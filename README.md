@@ -55,7 +55,7 @@ Join `localhost:25565` with Minecraft Java Edition 26.2 and accept the resource 
   - `world/`: Polar and marks loading.
   - `ui/`: handwritten Window views.
 - `server/`: backend schema, players, shop, rounds, courses and leaderboards.
-- `pack/src/window/`: Window UI definitions.
+- `pack/src/window/`: Window UI definitions, built on the clubhouse theme in `theme/`.
 - `worlds/mark-kinds.json`: the mark kinds World Builder uses for these worlds.
 
 `just check` runs formatting, linting, codegen, TypeScript and pack checks. JVM tests

@@ -1,16 +1,12 @@
 package com.chunkzero.example.ui
 
-import com.chunkzero.example.ui.generated.WindowHudDefinitions
-import com.chunkzero.window.HudScope
-import com.chunkzero.window.HudView
+import com.chunkzero.example.ui.generated.GolfHud
 import net.kyori.adventure.text.Component
 
-enum class StatusKind(
-    internal val slot: String,
-) {
-    INFO("status_info"),
-    GOOD("status_good"),
-    BAD("status_bad"),
+enum class StatusKind {
+    INFO,
+    GOOD,
+    BAD,
 }
 
 data class GolfStatus(
@@ -28,43 +24,30 @@ interface GolfHudState {
     val status: GolfStatus?
 }
 
-/**
- * Round HUD, composed for the action bar. Shader HUDs draw each slot in its authored colour, so the status colour
- * comes from [GolfStatus.kind] and the power meter is a row of fixed-colour segment slots over a dim track.
- */
+/** Round HUD, composed for the action bar. Shader HUDs draw text in its authored colour, so the status picks a tone. */
 class GolfStatusHud(
     private val state: GolfHudState,
-) : HudView(WindowHudDefinitions.golf) {
-    override fun HudScope.bind() {
-        slot("hole") { holeText() }
-        slot("par") { text("Par ${state.par}") }
-        slot("stroke") { text(state.stroke.toString()) }
-        for (kind in StatusKind.entries) {
-            slot(kind.slot) {
-                state.status?.takeIf { it.kind == kind }?.let { text(fit(it.text, STATUS_WIDTH, UiFont.SMALL_CAPS)) }
-                    ?: text("")
-            }
+) : GolfHud() {
+    override fun hole(): Component = text("HOLE ${state.hole}")
+
+    override fun holeName(): Component = text(state.holeName)
+
+    override fun par(): Component = text("Par ${state.par}")
+
+    override fun stroke(): Component = text(state.stroke.toString())
+
+    override fun status(): Component = text(state.status?.text.orEmpty())
+
+    override fun statusTone(): StatusTone =
+        when (state.status?.kind) {
+            StatusKind.GOOD -> StatusTone.GOOD
+            StatusKind.BAD -> StatusTone.BAD
+            StatusKind.INFO, null -> StatusTone.INFO
         }
-        for (i in 0 until METER_SEGMENTS) {
-            slot("power_$i") { if (i < filledSegments()) text("█") else text("") }
-            slot("power_track_$i") { if (state.power != null && i >= filledSegments()) text("█") else text("") }
-        }
-    }
 
-    private fun holeText(): Component {
-        val prefix = "HOLE ${state.hole}"
-        if (state.holeName.isEmpty()) return text(prefix)
-        val separator = "  ·  "
-        val budget = HOLE_WIDTH - UiFont.VANILLA.width(prefix + separator, bold = true)
-        return text(prefix + separator + fit(state.holeName, budget, UiFont.VANILLA, bold = true))
-    }
-
-    private fun filledSegments(): Int =
-        Math.round((state.power ?: return 0).coerceIn(0.0, 1.0) * METER_SEGMENTS).toInt()
-
-    private companion object {
-        const val METER_SEGMENTS = 12
-        const val HOLE_WIDTH = 150
-        const val STATUS_WIDTH = 132
+    override fun power(index: Int): Power {
+        val power = state.power ?: return Power.IDLE
+        val lit = Math.round(power.coerceIn(0.0, 1.0) * POWER_SIZE).toInt()
+        return if (index < lit) Power.LIT else Power.TRACK
     }
 }

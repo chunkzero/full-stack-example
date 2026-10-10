@@ -1,83 +1,113 @@
-import { Box, Button, Column, Container, Hotbar, Player, Row, Text, Window } from "#plugins/window";
-import type { Child, TextElementProps, TextProps } from "#plugins/window";
-import { colors, text, TitlePlate } from "./theme.tsx";
+import { Box, Case, Section, Switch, Text } from "plugin:window/ui";
+import type { Child, TextElementProps } from "plugin:window/ui";
+import { action, flag, text } from "plugin:window/bind";
+import { Button, Column, Row, Window, art, palette, styles } from "./theme/index.ts";
 
 const players = 8;
+const holes = 9;
+
+const par = text("hole_par", { shape: [holes] });
+const strokes = text("strokes", { shape: [players, holes] });
+const viewer = flag("viewer", { shape: [players] });
 
 interface TableColumn {
-  key: string;
   title: string;
   width: number;
-  align: TextProps["align"];
+  align: TextElementProps["align"];
   /** Space before the column, separating the name, holes, total and score groups. */
   gap: number;
 }
 
-const columns: TableColumn[] = [
-  ...Array.from({ length: 9 }, (_, i) => ({
-    key: `h${i + 1}`,
-    title: String(i + 1),
-    width: 8,
-    align: "center" as const,
-    gap: i === 0 ? 2 : 0,
-  })),
-  { key: "total", title: "Tot", width: 16, align: "center", gap: 2 },
-  { key: "score", title: "+/-", width: 14, align: "right", gap: 2 },
-];
+const holeColumns: TableColumn[] = Array.from({ length: holes }, (_, i) => ({
+  title: String(i + 1),
+  width: 8,
+  align: "center",
+  gap: i === 0 ? 2 : 0,
+}));
+const total: TableColumn = { title: "Tot", width: 16, align: "center", gap: 2 };
+const score: TableColumn = { title: "+/-", width: 14, align: "right", gap: 2 };
 
-/** One table row: a 44px name, then each column's text with the props `cell` gives it. */
-function TableRow(props: { name: Child; cell: (column: TableColumn) => TextElementProps }) {
+/** One table row: a 44px name, the nine holes, then the total and score cells. */
+function TableRow(props: {
+  name: Child;
+  hole: (index: number) => TextElementProps;
+  total: TextElementProps;
+  score?: TextElementProps;
+}) {
+  const cell = (column: TableColumn, cell: TextElementProps) => (
+    <Text width={column.width} align={column.align} margin={{ left: column.gap }} {...cell} />
+  );
   return (
     <Row padding={{ left: 2, right: 2 }}>
       <Box width={44}>{props.name}</Box>
-      {columns.map((column) => (
-        <Text width={column.width} align={column.align} margin={{ left: column.gap }} {...props.cell(column)} />
-      ))}
+      {holeColumns.map((column, i) => cell(column, props.hole(i)))}
+      {cell(total, props.total)}
+      {props.score === undefined ? null : cell(score, props.score)}
     </Row>
   );
 }
 
+const rule = <Box frame={art.paperRule} height={1} />;
+
 export default (
-  <Window name="scorecard" container="generic_9x4" frame="shell" text={text}>
-    <TitlePlate bind="course" />
-    <Column x={8} y={17} width={160} height={119} frame="recess" padding={{ top: 4, left: 2, right: 2 }}>
+  <Window
+    name="scorecard"
+    container="generic_9x4"
+    title={<Text bind={text("course")} width={112} align="center" overflow="ellipsis" />}
+  >
+    <Column
+      x={8}
+      y={18}
+      width={160}
+      height={119}
+      frame={art.paper}
+      padding={{ top: 4, left: 2, right: 2 }}
+      gap={2}
+      text={styles.ink}
+    >
       <TableRow
-        name={<Text color={colors.muted}>Player</Text>}
-        cell={(column) => ({ children: column.title, color: colors.muted })}
+        name={<Text color={palette.inkMuted}>Player</Text>}
+        hole={(i) => ({ children: holeColumns[i]!.title, color: palette.inkMuted })}
+        total={{ children: total.title, color: palette.inkMuted }}
+        score={{ children: score.title, color: palette.inkMuted }}
       />
-      <Box frame="rule" height={1} margin={{ top: 1 }} />
-      <Box margin={{ top: 2 }}>
-        <TableRow
-          name={<Text color={colors.gold}>Par</Text>}
-          cell={(column) => ({ bind: `par_${column.key}`, color: colors.gold })}
-        />
-      </Box>
-      <Box frame="rule" height={1} margin={{ top: 2 }} />
-      <Column margin={{ top: 2 }}>
+      {rule}
+      <TableRow name={<Text bold>Par</Text>} hole={(i) => ({ bind: par.at(i) })} total={{ bind: text("par_total") }} />
+      {rule}
+      <Column>
         {Array.from({ length: players }, (_, i) => (
-          <Box height={11} padding={{ top: 1, bottom: 2 }} frame={i % 2 === 1 ? "stripe" : undefined}>
-            <TableRow name={<Text bind={`p${i}_name`} />} cell={(column) => ({ bind: `p${i}_${column.key}` })} />
-          </Box>
+          <Column height={11} justify="center" frame={i % 2 === 1 ? art.paperStripe : undefined}>
+            <Switch bind={viewer.at(i)} x={0} y={0}>
+              <Case value="true" frame={art.paperMark} width={156} height={11} />
+              <Case value="false" width={156} height={11} />
+            </Switch>
+            <TableRow
+              name={<Text bind={text("player_name", { shape: [players] }).at(i)} overflow="ellipsis" />}
+              hole={(hole) => ({ bind: strokes.at(i, hole) })}
+              total={{ bind: text("total", { shape: [players] }).at(i) }}
+              score={{ bind: text("score", { shape: [players] }).at(i) }}
+            />
+          </Column>
         ))}
       </Column>
     </Column>
-    <Row x={8} y={139} width={160} height={18} frame="recess">
-      <Text width={54} align="center" color={colors.green}>
+    <Row x={8} y={139} width={160} height={16} frame={art.recess}>
+      <Text width={54} align="center" color={palette.green}>
         Under par
       </Text>
       <Text width={52} align="center">
         Even
       </Text>
-      <Text width={54} align="center" color={colors.red}>
+      <Text width={54} align="center" color={palette.red}>
         Over par
       </Text>
     </Row>
-    <Container />
-    <Player />
-    <Hotbar>
-      <Button name="back" span={9} frame="button" tooltip={{ title: "Back to clubhouse", lines: ["Leave the course"] }}>
+    <Section of="container" />
+    <Section of="player" />
+    <Section of="hotbar">
+      <Button onClick={action("back")} span={9} tooltip={{ title: "Back to clubhouse", lines: ["Leave the course"] }}>
         Back to clubhouse
       </Button>
-    </Hotbar>
+    </Section>
   </Window>
 );

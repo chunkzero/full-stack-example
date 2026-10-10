@@ -1,60 +1,75 @@
-import { Box, Button, Container, Hotbar, Icon, Item, Player, Repeater, Row, Text, Window } from "#plugins/window";
-import type { StateProps } from "#plugins/window";
-import { colors, text, TitlePlate } from "./theme.tsx";
+import { Box, Case, Items, Region, Section, Switch, Text, containerLayout } from "plugin:window/ui";
+import { action, flag, items, text, value } from "plugin:window/bind";
+import { Button, Row, Window, art, close, palette } from "./theme/index.ts";
 
-const hitbox = "example:gui/hitbox";
+const cards = 9;
 
-function pageStates(name: string): Record<string, StateProps> {
-  return {
-    enabled: { itemModel: hitbox, tooltip: name, sprite: "pager" },
-    disabled: { itemModel: hitbox, tooltip: name + " unavailable", sprite: "pager_disabled" },
-  };
-}
+const pick = action("entry", { shape: [cards] });
+const state = value("entry_state", ["available", "equipped", "empty"], { shape: [cards] });
+const icon = items("entry_icon", { shape: [cards] });
+const name = text("entry_name", { shape: [cards] });
+const price = text("entry_price", { shape: [cards] });
 
 /**
- * Each card is 3x2 slots: the ball sits in the top-left slot with its price beside it, and the name runs
- * below on one line or wrapped onto two. `card` overlays the equipped and empty card styles.
+ * A card is 3x2 slots: the ball sits in the top-left slot with its price beside it, and the name wraps onto up to two
+ * lines below. Its face follows the entry's state.
  */
+function Card(props: { index: number }) {
+  const i = props.index;
+  const face = { width: 52, height: 34 };
+  return (
+    <Box span={[3, 2]} padding={1}>
+      <Box grow>
+        <Switch bind={state.at(i)} x={0} y={0}>
+          <Case value="available" frame={art.button} {...face} />
+          <Case value="equipped" frame={art.cardEquipped} {...face} />
+          <Case value="empty" frame={art.recess} {...face} />
+        </Switch>
+        <Box x={0} y={0} width={16} height={16}>
+          <Items bind={icon.at(i)} />
+        </Box>
+        <Text bind={price.at(i)} x={17} y={4} width={31} align="right" />
+        <Text bind={name.at(i)} x={3} y={17} width={46} lines={2} lineHeight={7} />
+        <Region onClick={pick.at(i)} />
+      </Box>
+    </Box>
+  );
+}
+
+const { player, hotbar } = containerLayout("generic_9x6").sections;
+
 export default (
-  <Window name="shop" container="generic_9x6" frame="shell" text={text}>
-    <TitlePlate title="Ball Shop" />
-    <Container>
-      <Repeater name="entry" cell={[3, 2]} columns={3} rows={3} frame="button">
-        <Icon bind="card" size={[52, 34]} x={0} y={0} />
-        <Item name="icon" cellSlot={1} />
-        <Text bind="price" x={18} y={4} width={31} align="right" />
-        <Text bind="name" x={3} y={20} width={46} />
-        <Text bind="name_top" x={3} y={17} width={46} />
-        <Text bind="name_bottom" x={3} y={24} width={46} />
-      </Repeater>
-    </Container>
-    <Box x={8} y={131} width={160} height={1} frame="rule" />
-    <Box x={62} y={139} width={52} height={16} frame="recess">
-      <Text bind="page" align="center" />
-    </Box>
-    <Box x={8} y={157} width={160} height={34} frame="recess" text={{ align: "center" }}>
-      <Text bind="message" x={4} y={13} width={152} />
-      <Text bind="message_top" x={4} y={8} width={152} />
-      <Text bind="message_bottom" x={4} y={18} width={152} />
-    </Box>
-    <Row x={8} y={197} width={106} height={16} frame="recess" padding={{ left: 6, right: 6 }}>
-      <Text width={40} color={colors.muted}>
+  <Window name="shop" container="generic_9x6" title="Ball Shop">
+    <Section of="container">
+      {Array.from({ length: cards }, (_, i) => (
+        <Card index={i} />
+      ))}
+    </Section>
+    <Box x={8} y={player.bounds.y - 8} width={160} height={1} frame={art.rule} />
+    <Row x={62} y={player.bounds.y} width={52} height={16} frame={art.recess}>
+      <Text bind={text("page")} align="center" />
+    </Row>
+    <Row x={8} y={player.bounds.y + 18} width={160} height={34} frame={art.recess} padding={{ left: 4, right: 4 }}>
+      <Text bind={text("message")} align="center" lines={2} />
+    </Row>
+    <Row x={8} y={hotbar.bounds.y} width={106} height={16} frame={art.recess} padding={{ left: 6, right: 6 }}>
+      <Text width={40} color={palette.muted}>
         Coins
       </Text>
-      <Text bind="balance" align="right" color={colors.gold} />
+      <Text bind={text("balance")} align="right" color={palette.gold} />
     </Row>
-    <Player>
-      <Button name="prev" span={3} states={pageStates("Previous page")}>
-        <Text bind="prev_label" />
+    <Section of="player">
+      <Button onClick={action("previous")} enabled={flag("can_previous")} span={3} tooltip="Previous page">
+        {"< Prev"}
       </Button>
-      <Button name="next" at={[6, 0]} span={3} states={pageStates("Next page")}>
-        <Text bind="next_label" />
+      <Button onClick={action("next")} enabled={flag("can_next")} at={[6, 0]} span={3} tooltip="Next page">
+        {"Next >"}
       </Button>
-    </Player>
-    <Hotbar>
-      <Button name="exit" at={[6, 0]} span={3} frame="button" close tooltip="Close the shop">
+    </Section>
+    <Section of="hotbar">
+      <Button onClick={close} at={[6, 0]} span={3} tooltip="Close the shop">
         Close
       </Button>
-    </Hotbar>
+    </Section>
   </Window>
 );

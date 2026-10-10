@@ -227,7 +227,7 @@ class Menus(
         val logger = LoggerFactory.getLogger(Menus::class.java)!!
         val HINTS =
             mapOf(
-                Freshness.UPDATING to Component.text("Updating…", NamedTextColor.GRAY),
+                Freshness.UPDATING to Component.text("Updating...", NamedTextColor.GRAY),
                 Freshness.OFFLINE to Component.text("Offline: showing your last known balance.", NamedTextColor.GRAY),
             )
     }
