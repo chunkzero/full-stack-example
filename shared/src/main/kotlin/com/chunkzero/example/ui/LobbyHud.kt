@@ -17,14 +17,13 @@ data class LobbyStats(
     val aces: Int,
     val best: Int?,
     val coursePar: Int,
-    val record: CourseRecord?,
     val golfers: Int,
 )
 
 /**
  * The clubhouse HUDs, composed for the action bar and all reading [stats]: the golfer at the top left, their coins and
- * best round at the top right, and the course at the bottom right. Shader HUDs draw text in its authored colour, so
- * the best round picks a tone instead of colouring its score to par.
+ * best round at the top right, and the course's head count at the bottom right. Shader HUDs draw text in its authored
+ * colour, so the best round picks a tone instead of colouring its score to par.
  */
 class LobbyHuds(
     var stats: LobbyStats,
@@ -38,15 +37,15 @@ class LobbyHuds(
 
         override fun xpBar(index: Int): Boolean = index < stats.xp * XP_BAR_SIZE / stats.xpForNextLevel.coerceAtLeast(1)
 
-        override fun xpText(): Component = text("${stats.xp} / ${stats.xpForNextLevel} XP")
+        override fun xpText(): Component = text("${stats.xp} / ${stats.xpForNextLevel}")
     }
 
     private inner class Wallet : LobbyWalletHud() {
         override fun coins(): Component = text("${stats.coins} ◆")
 
         override fun best(): Component {
-            val best = stats.best ?: return text("Best –")
-            return text("Best $best (${formatScoreToPar(best - stats.coursePar)})")
+            val best = stats.best ?: return text("none yet")
+            return text("$best (${formatScoreToPar(best - stats.coursePar)})")
         }
 
         override fun bestTone(): BestTone {
@@ -58,17 +57,12 @@ class LobbyHuds(
             }
         }
 
-        override fun tally(): Component = text("${plural(stats.rounds, "round")} · ${plural(stats.aces, "ace")}")
+        override fun rounds(): Component = text(stats.rounds.toString())
+
+        override fun aces(): Component = text(stats.aces.toString())
     }
 
     private inner class Course : LobbyCourseHud() {
-        override fun record(): Component {
-            val record = stats.record ?: return text("No record yet")
-            return text(
-                "Record ${record.strokes} (${formatScoreToPar(record.strokes - stats.coursePar)}) · ${record.holder}",
-            )
-        }
-
         override fun golfers(): Component = text("${plural(stats.golfers, "golfer")} here")
     }
 }

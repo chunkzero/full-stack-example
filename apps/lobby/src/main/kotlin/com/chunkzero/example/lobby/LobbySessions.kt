@@ -190,7 +190,6 @@ class LobbySession : CoroutineSession() {
                 aces = profile.holesInOne().toInt(),
                 best = visitor.personalBest,
                 coursePar = coursePar ?: return,
-                record = menus.record,
                 golfers = visitors.size,
             ),
         )

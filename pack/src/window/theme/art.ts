@@ -18,6 +18,8 @@ export const palette = {
   cream: "#fff6d6",
   gold: "#ffd75e",
   muted: "#a9d9b5",
+  /** Quiet HUD text over the world, where the felt green of `muted` would sink into grass and sky. */
+  soft: "#e8e2cf",
   green: "#6fdc8c",
   red: "#ff6b6b",
   ink: "#2b1900",

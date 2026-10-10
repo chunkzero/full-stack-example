@@ -1,5 +1,5 @@
 import { Hud, Image, Switch, Text } from "plugin:window/ui";
-import type { TextProps } from "plugin:window/ui";
+import type { Child, TextProps } from "plugin:window/ui";
 import { flag, text, value } from "plugin:window/bind";
 import { Row, art, labels, palette, styles } from "./theme/index.ts";
 
@@ -8,11 +8,28 @@ const best = text("best");
 const bestTone = value("best_tone", ["none", "even", "under", "over"]);
 
 const right: TextProps = { ...labels, align: "right" };
-const smallHeading: TextProps = { bold: true, color: palette.gold };
+/** Quiet labels beside bold values. */
+const soft: TextProps = { color: palette.soft };
+const strong: TextProps = { bold: true, color: palette.cream };
 
-/** The clubhouse HUDs, one per corner. Shader HUDs draw text in its authored color, so the best round picks a tone. */
+/** A quiet label on the left and a bold value flush right. */
+function Stat(props: { label: string; children: Child }) {
+  return (
+    <Row width={96}>
+      <Text width={36} align="left" style={soft}>
+        {props.label}
+      </Text>
+      {props.children}
+    </Row>
+  );
+}
+
+/**
+ * The clubhouse HUDs, one per corner, drawn straight over the world: values bold and cream, labels soft. Shader HUDs
+ * draw text in its authored color, so the best round picks a tone.
+ */
 export default [
-  <Hud name="lobby_golfer" anchor="top-left" offset={[6, 6]} gap={3} text={labels}>
+  <Hud name="lobby_golfer" anchor="top-left" offset={[6, 6]} gap={4} text={labels}>
     <Row gap={4}>
       <Row width={26} height={10} frame={art.plaque} justify="center" text={styles.ink}>
         <Text bind={text("level")} width={24} align="center" />
@@ -25,28 +42,35 @@ export default [
           <Switch on={xp.at(i)}>{{ true: <Image art={art.xpOn} />, false: <Image art={art.xpOff} /> }}</Switch>
         ))}
       </Row>
-      <Text bind={text("xp_text")} width={66} color={palette.muted} />
+      <Text bind={text("xp_text")} width={46} style={strong} />
+      <Text style={soft}>XP</Text>
     </Row>
   </Hud>,
 
-  <Hud name="lobby_wallet" anchor="top-right" offset={[-6, 6]} gap={2} text={right}>
-    <Text bind={text("coins")} style={styles.heading} width={90} />
-    <Switch on={bestTone}>
-      {{
-        none: <Text bind={best} width={90} color={palette.muted} />,
-        even: <Text bind={best} width={90} />,
-        under: <Text bind={best} width={90} color={palette.green} />,
-        over: <Text bind={best} width={90} color={palette.red} />,
-      }}
-    </Switch>
-    <Text bind={text("tally")} width={90} color={palette.muted} />
+  <Hud name="lobby_wallet" anchor="top-right" offset={[-6, 6]} gap={3} text={right}>
+    <Text bind={text("coins")} style={styles.heading} width={96} margin={{ bottom: 1 }} />
+    <Stat label="Best">
+      <Switch on={bestTone} grow>
+        {{
+          none: <Text bind={best} style={soft} />,
+          even: <Text bind={best} style={strong} />,
+          under: <Text bind={best} bold color={palette.green} />,
+          over: <Text bind={best} bold color={palette.red} />,
+        }}
+      </Switch>
+    </Stat>
+    <Stat label="Rounds">
+      <Text bind={text("rounds")} grow style={strong} />
+    </Stat>
+    <Stat label="Aces">
+      <Text bind={text("aces")} grow style={strong} />
+    </Stat>
   </Hud>,
 
-  <Hud name="lobby_course" anchor="bottom-right" offset={[-6, -6]} gap={2} text={right}>
-    <Text width={140} style={smallHeading}>
+  <Hud name="lobby_course" anchor="bottom-right" offset={[-6, -6]} gap={3} text={right}>
+    <Text width={110} style={styles.heading}>
       Oakmere Links
     </Text>
-    <Text bind={text("record")} width={140} color={palette.muted} overflow="ellipsis" />
-    <Text bind={text("golfers")} width={140} color={palette.muted} />
+    <Text bind={text("golfers")} width={110} style={soft} />
   </Hud>,
 ];
