@@ -97,6 +97,7 @@ fun scoreName(
         0 -> ScoreName("Par", ScoreTone.NEUTRAL)
         1 -> ScoreName("Bogey", ScoreTone.BAD)
         2 -> ScoreName("Double bogey", ScoreTone.BAD)
+        3 -> ScoreName("Triple bogey", ScoreTone.BAD)
         else -> ScoreName("+$difference", ScoreTone.BAD)
     }
 }

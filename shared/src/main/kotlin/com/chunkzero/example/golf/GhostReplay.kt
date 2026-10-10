@@ -4,6 +4,7 @@ import com.chunkzero.chunk.multistom.SessionScope
 import com.chunkzero.example.golf.physics.BallEvent
 import com.chunkzero.example.golf.physics.Shot
 import com.chunkzero.example.golf.physics.Terrain
+import net.kyori.adventure.text.Component
 import net.minestom.server.entity.Player
 import net.minestom.server.instance.Instance
 import net.minestom.server.timer.Task
@@ -12,7 +13,8 @@ import net.minestom.server.timer.TaskSchedule
 /**
  * Replays recorded [shots] for [hole] from its tee as a ghost ball only [viewer] sees. Each shot fires [delayTicks]
  * after the ghost comes to rest; out-of-bounds shots go back to their reset position like a played ball. Calls
- * [onFinish] and removes the ghost after it sinks or runs out of shots; it also goes away if [viewer] leaves.
+ * [onFinish] and removes the ghost after it sinks or runs out of shots; it also goes away if [viewer] leaves. A
+ * [label] names whose record it is above the ball.
  */
 class GhostReplay(
     private val scope: SessionScope,
@@ -21,11 +23,22 @@ class GhostReplay(
     hole: Hole,
     private val shots: List<Shot>,
     viewer: Player,
+    label: String? = null,
     skin: BallSkin = BallSkin.GHOST,
     private val delayTicks: Int = 15,
     private val onFinish: () -> Unit = {},
 ) : AutoCloseable {
-    private val ball = GolfBall(scope, instance, terrain, hole, skin, viewer, onEvent = ::onEvent)
+    private val ball =
+        GolfBall(
+            scope,
+            instance,
+            terrain,
+            hole,
+            skin,
+            viewer,
+            label = label?.let { Component.text("$it's record") },
+            onEvent = ::onEvent,
+        )
     private var next = 0
     private var pending: Task? = null
 

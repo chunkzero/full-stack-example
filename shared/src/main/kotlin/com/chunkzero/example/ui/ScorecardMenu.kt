@@ -4,6 +4,7 @@ import com.chunkzero.example.ui.generated.ScorecardView
 import com.chunkzero.window.Click
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.minestom.server.entity.Player
 
 data class ScorecardRow(
@@ -29,7 +30,10 @@ class ScorecardMenu(
 
     override fun parTotal(): Component = text(pars.take(HOLE_PAR_SIZE).sum().toString())
 
-    override fun playerName(index: Int): Component = text(rows.getOrNull(index)?.name.orEmpty())
+    override fun playerName(index: Int): Component {
+        val row = rows.getOrNull(index) ?: return text("")
+        return text(row.name).decoration(TextDecoration.BOLD, row.isViewer)
+    }
 
     override fun viewer(index: Int): Boolean = rows.getOrNull(index)?.isViewer == true
 

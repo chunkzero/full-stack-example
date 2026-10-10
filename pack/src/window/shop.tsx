@@ -7,12 +7,15 @@ const cards = 9;
 const pick = action("entry", { shape: [cards] });
 const state = value("entry_state", ["available", "equipped", "empty"], { shape: [cards] });
 const icon = items("entry_icon", { shape: [cards] });
+const hover = items("entry_hover", { shape: [cards] });
 const name = text("entry_name", { shape: [cards] });
 const price = text("entry_price", { shape: [cards] });
+const paged = flag("paged");
 
 /**
  * A card is 3x2 slots: the ball sits in the top-left slot with its price beside it, and the name wraps onto up to two
- * lines below. Its face follows the entry's state.
+ * lines below. Its face follows the entry's state. The other five slots hold `entry_hover`, an invisible copy of the
+ * ball's stack, so the ball's tooltip shows anywhere on the card.
  */
 function Card(props: { index: number }) {
   const i = props.index;
@@ -27,6 +30,12 @@ function Card(props: { index: number }) {
         </Switch>
         <Box x={0} y={0} width={16} height={16}>
           <Items bind={icon.at(i)} />
+        </Box>
+        <Box x={18} y={0} width={34} height={16}>
+          <Items bind={hover.at(i)} />
+        </Box>
+        <Box x={0} y={18} width={52} height={16}>
+          <Items bind={hover.at(i)} />
         </Box>
         <Text bind={price.at(i)} x={17} y={4} width={31} align="right" />
         <Text bind={name.at(i)} x={3} y={17} width={46} lines={2} lineHeight={7} />
@@ -46,9 +55,6 @@ export default (
       ))}
     </Section>
     <Box x={8} y={player.bounds.y - 8} width={160} height={1} frame={art.rule} />
-    <Row x={62} y={player.bounds.y} width={52} height={16} frame={art.recess}>
-      <Text bind={text("page")} align="center" />
-    </Row>
     <Row x={8} y={player.bounds.y + 18} width={160} height={34} frame={art.recess} padding={{ left: 4, right: 4 }}>
       <Text bind={text("message")} align="center" lines={2} />
     </Row>
@@ -59,12 +65,22 @@ export default (
       <Text bind={text("balance")} align="right" color={palette.gold} />
     </Row>
     <Section of="player">
-      <Button onClick={action("previous")} enabled={flag("can_previous")} span={3} tooltip="Previous page">
-        {"< Prev"}
-      </Button>
-      <Button onClick={action("next")} enabled={flag("can_next")} at={[6, 0]} span={3} tooltip="Next page">
-        {"Next >"}
-      </Button>
+      <Switch bind={paged} span={9}>
+        <Case value="true" direction="row">
+          <Button onClick={action("previous")} enabled={flag("can_previous")} basis={54} tooltip="Previous page">
+            {"< Prev"}
+          </Button>
+          <Box basis={54} padding={1}>
+            <Row grow frame={art.recess}>
+              <Text bind={text("page")} align="center" />
+            </Row>
+          </Box>
+          <Button onClick={action("next")} enabled={flag("can_next")} basis={54} tooltip="Next page">
+            {"Next >"}
+          </Button>
+        </Case>
+        <Case value="false" />
+      </Switch>
     </Section>
     <Section of="hotbar">
       <Button onClick={close} at={[6, 0]} span={3} tooltip="Close the shop">

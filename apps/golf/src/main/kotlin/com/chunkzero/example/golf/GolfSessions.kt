@@ -115,7 +115,10 @@ class GolfSession :
                 course.roundHoles,
                 skin,
                 ghost,
-                onHoleFinished = { refreshScorecards() },
+                onHoleFinished = { finished, hole, score ->
+                    refreshScorecards()
+                    shareHighlight(finished.player, hole, score)
+                },
                 onRoundFinished = ::startSave,
                 onResultsReady = { finished, save -> scope.coroutines.launch { showResults(finished, save) } },
             )
@@ -164,6 +167,24 @@ class GolfSession :
 
     private fun refreshScorecards() {
         scorecards.forEach { (player, menu) -> menu.rows = rowsFor(player) }
+    }
+
+    /** Tells everyone else in the session when [player] scores a birdie or better. */
+    private fun shareHighlight(
+        player: Player,
+        hole: Hole,
+        score: Int,
+    ) {
+        val feat =
+            when {
+                score == 1 -> "aced"
+                score <= hole.par - 3 -> "albatrossed"
+                score == hole.par - 2 -> "eagled"
+                score == hole.par - 1 -> "birdied"
+                else -> return
+            }
+        val line = Component.text("${player.username} $feat ${hole.name}", NamedTextColor.GRAY)
+        rounds.keys.filter { it != player }.forEach { it.sendMessage(line) }
     }
 
     /**

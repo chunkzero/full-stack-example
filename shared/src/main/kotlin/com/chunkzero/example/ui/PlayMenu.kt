@@ -34,13 +34,16 @@ class PlayMenu(
 
     override fun courseInfo(): Component = text("${course.holes} holes  ·  Par ${course.par}")
 
-    override fun record(): Component =
-        record?.let { fit("record", text(it.holder, UiColors.GOLD), text(" - ${it.strokes}", UiColors.GOLD)) }
-            ?: text("No record yet", UiColors.MUTED)
+    override fun record(): Component {
+        val record = record ?: return text("No record yet", UiColors.MUTED)
+        if (record.holder == player.username) return text("You hold the record", UiColors.GOLD)
+        return formatRound(record.strokes, course.par).append(text(" · ${record.holder}", UiColors.MUTED))
+    }
 
-    override fun best(): Component = personalBest?.let { text("$it strokes") } ?: text("Not played yet", UiColors.MUTED)
+    override fun best(): Component =
+        personalBest?.let { formatRound(it, course.par) } ?: text("Not played yet", UiColors.MUTED)
 
-    override fun players(): Component = text(if (playerCount == 1) "1 player" else "$playerCount players")
+    override fun players(): Component = text("$playerCount on the course")
 
     override fun onTeeOff(click: Click) = onTeeOff.invoke()
 

@@ -3,14 +3,14 @@ import { action, text } from "plugin:window/bind";
 import type { TextHandle } from "plugin:window/bind";
 import { Button, Column, Row, Window, art, close, palette, styles } from "./theme/index.ts";
 
-/** A small-caps label and a right-aligned value on one line. */
+/** A small-caps label and a right-aligned value on one line; a long value ends in an ellipsis. */
 function Stat(props: { bind: TextHandle; title: string }) {
   return (
     <Row>
       <Text width={48} color={palette.muted}>
         {props.title}
       </Text>
-      <Text bind={props.bind} align="right" />
+      <Text bind={props.bind} align="right" overflow="ellipsis" />
     </Row>
   );
 }
@@ -24,7 +24,7 @@ export default (
       <Column gap={2}>
         <Stat bind={text("record")} title="Record" />
         <Stat bind={text("best")} title="Your best" />
-        <Stat bind={text("players")} title="Playing" />
+        <Stat bind={text("players")} title="Golfers" />
       </Column>
     </Column>
     <Section of="container" />

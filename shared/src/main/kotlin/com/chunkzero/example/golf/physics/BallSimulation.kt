@@ -109,6 +109,10 @@ class BallSimulation(
     var moving = false
         private set
 
+    /** Speed into the hardest wall or ceiling hit during the last [tick], in blocks/s; 0 if there was none. */
+    var wallImpactSpeed = 0.0
+        private set
+
     /** Where an out-of-bounds ball goes back to: the start or the last rest position. */
     var restPosition: Vec = start
         private set
@@ -141,6 +145,7 @@ class BallSimulation(
     /** Advances one server tick; returns the shot's outcome on the tick it ends, otherwise null. */
     fun tick(): BallEvent? {
         if (!moving) return null
+        wallImpactSpeed = 0.0
         repeat(BallPhysics.SUBSTEPS) { substep()?.let { return stop(it) } }
         ticks++
         val speedSquared = vx * vx + vy * vy + vz * vz
@@ -350,6 +355,7 @@ class BallSimulation(
                 }
 
                 else -> {
+                    wallImpactSpeed = maxOf(wallImpactSpeed, -vn)
                     terrain.surface(box.blockX, box.blockY, box.blockZ).wallBounce
                 }
             }

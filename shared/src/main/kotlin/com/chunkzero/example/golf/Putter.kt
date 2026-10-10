@@ -1,32 +1,28 @@
 package com.chunkzero.example.golf
 
 import com.chunkzero.chunk.multistom.SessionScope
-import com.chunkzero.example.golf.physics.BallPhysics
 import com.chunkzero.example.golf.physics.Shot
+import com.chunkzero.example.golf.physics.Terrain
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.util.RGBLike
-import net.minestom.server.color.Color
 import net.minestom.server.coordinate.Point
-import net.minestom.server.coordinate.Pos
-import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Player
 import net.minestom.server.event.EventListener
 import net.minestom.server.event.player.PlayerUseItemEvent
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
-import net.minestom.server.network.packet.server.play.ParticlePacket
-import net.minestom.server.particle.Particle
+import net.minestom.server.sound.SoundEvent
 import net.minestom.server.tag.Tag
 import net.minestom.server.timer.TaskSchedule
-import kotlin.math.atan2
 
 /**
- * One player's putter. While [armed], using the putter starts charging: [power] sweeps 0 → 1 → 0 every
- * [PERIOD_TICKS] and an aim guide is drawn from the ball along the player's yaw. Using it again calls [onShot] with
- * the player's yaw and the current power, then disarms until the session arms it for the next stroke.
+ * One player's putter. While [armed], using the putter starts charging: [power] eases 0 → 1 → 0 every
+ * [PERIOD_TICKS], slowest at either end, and an [AimGuide] is drawn from the ball along the player's yaw. Using it
+ * again calls [onShot] with the player's yaw and the current power, then disarms until the session arms it for the
+ * next stroke. With [terrain] and the current [hole], the guide also predicts the ball's path.
  * Closes itself when the player leaves the session.
  */
 class Putter(
@@ -34,6 +30,8 @@ class Putter(
     private val player: Player,
     private val ball: () -> Point,
     private val onShot: (Shot) -> Unit,
+    terrain: Terrain? = null,
+    hole: () -> Hole? = { null },
 ) : AutoCloseable {
     private val currentPower = MutableStateFlow(0.0)
     val power: StateFlow<Double> = currentPower.asStateFlow()
@@ -48,6 +46,7 @@ class Putter(
 
     private var chargeTicks = -1
     private var lastUse = -DEBOUNCE_TICKS.toLong()
+    private val guide = AimGuide(scope, player, terrain, hole)
     private val listener = EventListener.of(PlayerUseItemEvent::class.java, ::onUse)
     private val task =
         scope.scheduler
@@ -74,11 +73,15 @@ class Putter(
 
             !charging -> {
                 chargeTicks = 0
+                player.playSound(Sound.sound(SoundEvent.BLOCK_WOODEN_BUTTON_CLICK_ON, Sound.Source.PLAYER, 0.4f, 1.4f))
             }
 
             else -> {
                 val shot = Shot(player.position.yaw, currentPower.value)
+                val at = ball()
                 armed = false
+                player.swingMainHand()
+                player.instance?.playSound(puttSound(shot.power), at.x(), at.y(), at.z())
                 onShot(shot)
             }
         }
@@ -88,36 +91,32 @@ class Putter(
         if (!charging) return
         chargeTicks++
         val phase = (chargeTicks % PERIOD_TICKS).toDouble() / PERIOD_TICKS
-        currentPower.value = if (phase < 0.5) phase * 2 else 2 - phase * 2
-        if (chargeTicks % 2 == 0) drawAimGuide()
-    }
-
-    private fun drawAimGuide() {
-        val yaw = Math.toRadians(player.position.yaw.toDouble())
-        val direction = Vec(-StrictMath.sin(yaw), 0.0, StrictMath.cos(yaw))
-        val origin = ball()
-        val particle = Particle.DUST.withProperties(guideColor(currentPower.value), 0.8f)
-        for (step in 1..GUIDE_POINTS) {
-            val point = origin.add(direction.mul(step * GUIDE_SPACING))
-            player.sendPacket(ParticlePacket(particle, point, Vec.ZERO, 0f, 1))
+        val power = (1 - StrictMath.cos(2 * Math.PI * phase)) / 2
+        currentPower.value = power
+        if (chargeTicks % METER_TICK_TICKS == 0) {
+            player.playSound(
+                Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_HAT, Sound.Source.PLAYER, 0.15f, (0.6 + 1.2 * power).toFloat()),
+            )
         }
+        if (chargeTicks % 2 == 0) guide.show(ball(), Shot(player.position.yaw, power))
     }
 
     private fun stopCharging() {
         chargeTicks = -1
         currentPower.value = 0.0
+        guide.hide()
     }
 
     override fun close() {
         task.cancel()
         scope.events.removeListener(listener)
+        guide.close()
     }
 
     companion object {
         const val PERIOD_TICKS = 40
         private const val DEBOUNCE_TICKS = 5
-        private const val GUIDE_POINTS = 6
-        private const val GUIDE_SPACING = 0.5
+        private const val METER_TICK_TICKS = 4
         private val PUTTER = Tag.Boolean("chunk_golf_putter")
 
         fun item(material: Material = Material.STICK): ItemStack =
@@ -125,28 +124,13 @@ class Putter(
 
         fun isPutter(item: ItemStack) = item.getTag(PUTTER) == true
 
-        private fun guideColor(power: Double): RGBLike = Color((255 * power).toInt(), (255 * (1 - power)).toInt(), 60)
+        /** A crisp tap for a soft putt, a fuller knock for a hard one. */
+        private fun puttSound(power: Double): Sound =
+            Sound.sound(
+                SoundEvent.BLOCK_WOOD_HIT,
+                Sound.Source.PLAYER,
+                (0.5 + 0.5 * power).toFloat(),
+                (1.8 - 0.6 * power).toFloat(),
+            )
     }
-}
-
-/** Stands [player] [distance] blocks behind the ball at [ball] (its centre), facing [target]. */
-fun placeBehind(
-    player: Player,
-    ball: Point,
-    target: Point,
-    distance: Double = 1.5,
-) {
-    var dx = target.x() - ball.x()
-    var dz = target.z() - ball.z()
-    val length = StrictMath.sqrt(dx * dx + dz * dz)
-    if (length < 1e-6) {
-        val yaw = Math.toRadians(player.position.yaw.toDouble())
-        dx = -StrictMath.sin(yaw)
-        dz = StrictMath.cos(yaw)
-    } else {
-        dx /= length
-        dz /= length
-    }
-    val yaw = Math.toDegrees(atan2(-dx, dz)).toFloat()
-    player.teleport(Pos(ball.x() - dx * distance, ball.y() - BallPhysics.RADIUS, ball.z() - dz * distance, yaw, 30f))
 }

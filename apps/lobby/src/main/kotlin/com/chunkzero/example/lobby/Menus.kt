@@ -62,14 +62,11 @@ class Menus(
 
     fun openPlay(visitor: Visitor) =
         load(visitor) {
-            val best =
-                visitor.backend.shared.rounds
-                    .personalBest(PersonalBestArgs(OAKMERE))
             PlayMenu(
                 visitor.player,
                 course = course(),
                 initialRecord = record,
-                initialPersonalBest = best?.toInt(),
+                initialPersonalBest = personalBest(visitor),
                 initialPlayerCount = visitors.size,
                 onTeeOff = { teeOff(visitor.player) },
                 onShop = { openShop(visitor) },
@@ -90,8 +87,18 @@ class Menus(
     fun openProfile(visitor: Visitor) =
         load(visitor) {
             val profile = currentProfile(visitor)
-            ProfileMenu(visitor.player, card(profile, catalog.items().firstOrNull { it.id() == profile.ball() }))
+            ProfileMenu(
+                visitor.player,
+                card(profile, catalog.items().firstOrNull { it.id() == profile.ball() }),
+                coursePar = course().par,
+                initialBest = personalBest(visitor),
+            )
         }
+
+    private suspend fun personalBest(visitor: Visitor): Int? =
+        visitor.backend.shared.rounds
+            .personalBest(PersonalBestArgs(OAKMERE))
+            ?.toInt()
 
     /** The watched profile, or a one-off query until the watch delivers its first value. */
     private suspend fun currentProfile(visitor: Visitor): ProfileResult =

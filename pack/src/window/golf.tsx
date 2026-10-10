@@ -8,6 +8,8 @@ const segments = 12;
 const status = text("status");
 const tone = value("status_tone", ["info", "good", "bad"]);
 const power = value("power", ["idle", "track", "lit"], { shape: [segments] });
+const time = text("time");
+const clock = value("clock", ["hidden", "low", "critical"]);
 
 /** Green through yellow to red along the power meter. */
 function meterColor(index: number): Color {
@@ -23,7 +25,7 @@ function meterColor(index: number): Color {
   return `#${[0, 1, 2].map((c) => channel(c).toString(16).padStart(2, "0")).join("")}`;
 }
 
-/** Shader HUDs draw text in its authored color, so the status has one case per tone. */
+/** Shader HUDs draw text in its authored color, so the status and the clock have one case per tone. */
 export default (
   <Hud name="golf" channel="actionbar" width={220} height={46} anchor="top" offset={[0, 8]} sourceBottom={59}>
     <Column height={32} frame={art.hud} padding={{ top: 5, left: 8, right: 8 }} gap={8} text={labels}>
@@ -31,14 +33,22 @@ export default (
       <Row gap={4}>
         <Text bind={text("hole")} style={styles.heading} width={46} />
         <Text bind={text("hole_name")} color={palette.muted} overflow="ellipsis" />
+        <Switch on={clock}>
+          {{
+            hidden: null,
+            low: <Text bind={time} width={22} align="right" color={palette.muted} />,
+            critical: <Text bind={time} width={22} align="right" color={palette.red} />,
+          }}
+        </Switch>
         <Text bind={text("par")} width={34} align="right" />
       </Row>
       <Row>
         <Text width={38} color={palette.muted}>
           Strokes
         </Text>
-        <Text bind={text("stroke")} style={styles.heading} width={24} color={palette.cream} margin={{ left: 2 }} />
-        <Switch on={tone} grow margin={{ left: 8 }} text={{ align: "right" }}>
+        <Text bind={text("stroke")} style={styles.heading} width={8} color={palette.cream} margin={{ left: 3 }} />
+        <Text bind={text("stroke_cap")} width={16} color={palette.muted} margin={{ left: 2 }} />
+        <Switch on={tone} grow margin={{ left: 4 }} text={{ align: "right" }}>
           {{
             info: <Text bind={status} color={palette.gold} overflow="ellipsis" />,
             good: <Text bind={status} color={palette.green} overflow="ellipsis" />,

@@ -79,6 +79,7 @@ class RoundCardTest {
         assertEquals(ScoreName("Par", ScoreTone.NEUTRAL), scoreName(3, 3))
         assertEquals("Bogey", scoreName(4, 3).text)
         assertEquals("Double bogey", scoreName(5, 3).text)
+        assertEquals("Triple bogey", scoreName(6, 3).text)
         assertEquals(ScoreName("+4", ScoreTone.BAD), scoreName(6, 2))
     }
 }

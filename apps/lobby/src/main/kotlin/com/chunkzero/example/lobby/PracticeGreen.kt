@@ -8,7 +8,13 @@ import com.chunkzero.example.golf.Putter
 import com.chunkzero.example.golf.ballStart
 import com.chunkzero.example.golf.physics.BallEvent
 import com.chunkzero.example.golf.physics.Shot
-import com.chunkzero.example.golf.placeBehind
+import com.chunkzero.example.golf.standNear
+import com.chunkzero.example.golf.strayed
+import com.chunkzero.example.ui.GolfHudState
+import com.chunkzero.example.ui.GolfStatus
+import com.chunkzero.example.ui.GolfStatusHud
+import com.chunkzero.example.ui.StatusKind
+import com.chunkzero.window.sendHud
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.entity.Player
@@ -40,6 +46,8 @@ class PracticeGreen(
                 player,
                 ball = { practices[player]?.ball?.position ?: player.position },
                 onShot = { practices[player]?.onShot(it) },
+                terrain = terrain,
+                hole = { hole },
             )
         scope.own(
             player,
@@ -83,13 +91,26 @@ class PracticeGreen(
         /** Set when the practice moves the player itself, so the next check doesn't read the teleport as leaving. */
         var resetting = false
         private var strokes = 0
-        private var notice: Component? = null
+        private var notice: GolfStatus? = null
         private var reset: Task? = null
         val ball = GolfBall(scope, instance, terrain, hole, look, onEvent = ::onBall)
-        private val status =
+        private val hud =
+            GolfStatusHud(
+                object : GolfHudState {
+                    override val hole get() = this@PracticeGreen.hole.number
+                    override val holeName get() = this@PracticeGreen.hole.name
+                    override val par get() = this@PracticeGreen.hole.par
+                    override val stroke get() = strokes
+                    override val maxStrokes: Int? = null
+                    override val secondsLeft: Int? = null
+                    override val power get() = if (putter.charging) putter.power.value else null
+                    override val status get() = notice
+                },
+            )
+        private val hudTask =
             scope.scheduler
-                .buildTask(::showStatus)
-                .repeat(TaskSchedule.tick(2))
+                .buildTask { player.sendHud(hud) }
+                .repeat(TaskSchedule.tick(1))
                 .schedule()
 
         init {
@@ -118,7 +139,7 @@ class PracticeGreen(
                 }
 
                 is BallEvent.Sunk -> {
-                    notice = Component.text("Nice putt! (${strokesText()})", NamedTextColor.GOLD)
+                    notice = GolfStatus("Nice putt!", StatusKind.GOOD)
                     reset =
                         scope.scheduler
                             .buildTask(::restart)
@@ -127,7 +148,8 @@ class PracticeGreen(
                 }
 
                 is BallEvent.OutOfBounds -> {
-                    notice = Component.text("Out of bounds! Your ball is back where it was.", NamedTextColor.RED)
+                    val splash = event.reason == BallEvent.Reason.HAZARD
+                    notice = GolfStatus(if (splash) "Into the drink" else "Out of bounds", StatusKind.BAD)
                     ball.place(event.resetPosition)
                     putter.armed = true
                 }
@@ -138,39 +160,19 @@ class PracticeGreen(
             strokes = 0
             notice = null
             ball.place(hole.ballStart)
-            resetting = true
-            placeBehind(player, ball.position, hole.cup.bottomCenter())
+            if (strayed(player, instance, ball.position)) {
+                resetting = true
+                standNear(player, instance, ball.position, hole.cup.bottomCenter())
+            }
             putter.armed = true
         }
 
-        private fun showStatus() {
-            player.sendActionBar(notice ?: statusLine())
-        }
-
-        private fun statusLine(): Component {
-            val line =
-                Component
-                    .text("${hole.name}  ·  Par ${hole.par}  ·  ", NamedTextColor.GRAY)
-                    .append(Component.text(strokesText(), NamedTextColor.WHITE))
-            if (!putter.charging) return line
-            val filled = (putter.power.value * POWER_SEGMENTS).toInt()
-            return line
-                .append(Component.text("  ·  Power ", NamedTextColor.GRAY))
-                .append(Component.text("|".repeat(filled), NamedTextColor.GREEN))
-                .append(Component.text("|".repeat(POWER_SEGMENTS - filled), NamedTextColor.DARK_GRAY))
-        }
-
-        private fun strokesText() = if (strokes == 1) "1 stroke" else "$strokes strokes"
-
         override fun close() {
-            status.cancel()
+            hudTask.cancel()
             reset?.cancel()
             putter.armed = false
             ball.close()
+            player.sendActionBar(Component.empty())
         }
-    }
-
-    private companion object {
-        const val POWER_SEGMENTS = 20
     }
 }

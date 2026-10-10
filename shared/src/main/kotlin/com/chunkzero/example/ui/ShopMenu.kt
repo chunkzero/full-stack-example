@@ -1,6 +1,7 @@
 package com.chunkzero.example.ui
 
 import com.chunkzero.example.ui.generated.ShopView
+import com.chunkzero.example.ui.generated.WindowPackData
 import com.chunkzero.window.Click
 import com.chunkzero.window.IndexedClick
 import net.kyori.adventure.text.Component
@@ -44,9 +45,12 @@ class ShopMenu(
 
     override fun balance(): Component = text("$coins ◆")
 
+    override fun paged(): Boolean = catalog.pageCount > 1
+
     override fun page(): Component = text("Page ${catalog.page} / ${catalog.pageCount}")
 
-    override fun message(): Component = message ?: text("Click a ball to buy or equip it", UiColors.MUTED)
+    override fun message(): Component =
+        message ?: text("Hover a ball for details, click to buy or equip", UiColors.MUTED)
 
     override fun canPrevious(): Boolean = catalog.canPrevious()
 
@@ -70,6 +74,12 @@ class ShopMenu(
 
     override fun entryIcon(index: Int): ItemStack? = catalog.at(index)?.let(::icon)
 
+    /** The ball's stack drawn invisibly, so the rest of its card shows the same tooltip as the icon. */
+    override fun entryHover(index: Int): ItemStack? =
+        catalog.at(index)?.let {
+            icon(it).with(DataComponents.ITEM_MODEL, HITBOX_MODEL).without(DataComponents.ENCHANTMENT_GLINT_OVERRIDE)
+        }
+
     override fun onEntry(click: IndexedClick) {
         val skin = catalog.at(click.index) ?: return
         if (skin.owned || skin.price <= coins) {
@@ -87,10 +97,10 @@ class ShopMenu(
     private fun icon(skin: BallSkin): ItemStack {
         val action =
             when {
-                skin.equipped -> line("Equipped", UiColors.GOLD)
-                skin.owned -> line("Click to equip", UiColors.GREEN)
+                skin.equipped -> line("In use", UiColors.GOLD)
+                skin.owned -> line("Owned · click to equip", UiColors.GREEN)
                 skin.price <= coins -> line("Click to buy for ${skin.price} coins", UiColors.GOLD)
-                else -> line("Not enough coins (${skin.price})", UiColors.RED)
+                else -> line("Not enough coins · costs ${skin.price}", UiColors.RED)
             }
         return ItemStack
             .builder(skin.item)
@@ -104,4 +114,9 @@ class ShopMenu(
         value: String,
         color: TextColor,
     ): Component = text(value, color).decoration(TextDecoration.ITALIC, false)
+
+    private companion object {
+        /** The pack's invisible item model, the one Window gives region hitboxes. */
+        val HITBOX_MODEL = "${WindowPackData.manifest.namespace}:gui/hitbox"
+    }
 }

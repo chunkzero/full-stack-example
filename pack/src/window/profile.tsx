@@ -5,14 +5,14 @@ import { Button, Column, Row, Window, art, close, palette, styles } from "./them
 
 const xp = flag("xp", { shape: [16] });
 
-/** A recessed stat tile over three slot columns, with a caption above a large value. */
-function Tile(props: { bind: TextHandle; title: string }) {
+/** A recessed stat tile with a caption above a large value. */
+function Tile(props: { bind: TextHandle; title: string; width: number }) {
   return (
-    <Column width={52} height={34} frame={art.recess} padding={{ top: 6 }} gap={4}>
-      <Text width={52} align="center" color={palette.muted}>
+    <Column width={props.width} height={34} frame={art.recess} padding={{ top: 6 }} gap={4}>
+      <Text width={props.width} align="center" color={palette.muted}>
         {props.title}
       </Text>
-      <Text bind={props.bind} style={styles.heading} align="center" />
+      <Text bind={props.bind} style={styles.heading} align="center" overflow="ellipsis" />
     </Column>
   );
 }
@@ -36,9 +36,10 @@ export default (
       </Row>
     </Column>
     <Row x={8} y={67} gap={2}>
-      <Tile bind={text("coins")} title="Coins" />
-      <Tile bind={text("rounds")} title="Rounds" />
-      <Tile bind={text("aces")} title="Aces" />
+      <Tile bind={text("coins")} title="Coins" width={40} />
+      <Tile bind={text("rounds")} title="Rounds" width={34} />
+      <Tile bind={text("aces")} title="Aces" width={30} />
+      <Tile bind={text("best")} title="Best" width={50} />
     </Row>
     <Section of="container">
       <Items bind={items("ball")} />
